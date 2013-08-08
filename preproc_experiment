@@ -11,13 +11,13 @@ option_list <- list(
               dest="samplesFile", metavar="sample file"),
   make_option(c("-dir", "--directory"), type="character", default="00-RawData",
               help="Directory where the raw sequence data is stored, default is 00-RawData",
-              dest="Raw_Folder", metavar="raw folder")
-  make_option(c("-qual", "--quality"), type="numeric", default=24,
+              dest="Raw_Folder", metavar="raw folder"),
+make_option(c("-qual", "--quality"), type="numeric", default=24,
               help="Quality score to use during lucy trimming, default is 24",
-              dest="qual", metavar="quality")
+              dest="qual", metavar="quality"),
   make_option(c("-minL", "--miniumumLength"), type="numeric", default=150,
               help="Discard reads less then minimum length, default is 150",
-              dest="minL", metavar="min length")
+              dest="minL", metavar="min length"),
   make_option(c("-overlap", "--overlap"), type="numeric", default=275,
               help="Overlap parameter for flash, default is 275",
               dest="overlap", metavar="overlap")
