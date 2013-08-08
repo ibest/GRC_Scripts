@@ -116,11 +116,11 @@ for (index in seq_along(targets$SEQUENCE_ID)){
     system(third_flash(Read1, Read2,output,overlap=275,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
-    SE1 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150_SE.fastq",sep="_"))
-    SE2 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150.extendedFrags.fastq",sep="_"))
+    SE1 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"dedup_q24min150_SE.fastq",sep="_"))
+    SE2 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"dedup_q24min150.extendedFrags.fastq",sep="_"))
 
-    Read1 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150.notCombined_1.fastq",sep="_"))
-    Read2 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150.notCombined_2.fastq",sep="_"))
+    Read1 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"dedup_q24min150.notCombined_1.fastq",sep="_"))
+    Read2 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"dedup_q24min150.notCombined_2.fastq",sep="_"))
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
