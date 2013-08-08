@@ -1,0 +1,144 @@
+#!/usr/bin/env Rscript
+
+suppressPackageStartupMessages(library("optparse"))
+# specify our desired options in a list
+# by default OptionParser will add an help option equivalent to
+# make_option(c("-h", "--help"), action="store_true", default=FALSE,
+# help="Show this help message and exit")
+option_list <- list(
+  make_option(c("-f", "--file"), type="character", default="samples.txt",
+              help="The filename of the sample file",
+              dest="samplesFile", metavar="sample file"),
+  make_option(c("-dir", "--directory"), type="character", default="00-RawData",
+              help="Directory where the raw sequence data is stored",
+              dest="Raw_Folder", metavar="raw folder")
+)
+# get command line options, if help option encountered print help and exit,
+# otherwise if options not found on command line then set defaults,
+opt <- parse_args(OptionParser(option_list=option_list))
+
+if ( !file.exists(opt$samplesFile) ) {
+  write(paste("Sample file",opt$samplesFile,"does not exist\n"), stderr())
+  stop()
+}
+targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
+
+write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())
+
+suppressPackageStartupMessages(library("ShortRead"))
+
+
+### targets$SEQUENCE_ID should be the folder name inside of Raw_Folder
+### targets$SAMPLE_ID should be the sample name
+
+## directory structure
+Raw_Folder <- opt$Raw_Folder
+## assumes Illumina data is under a folder, named targets$SEQUENCE_ID and 454 sff files are just files in the folder
+Clean_Folder <- "01-Clean_Merge"
+
+Final_Folder <- "02-Cleaned"
+
+if (any(is.na(match(targets$SEQUENCE_ID,dir(path=Raw_Folder))))){
+  write("targets file does not match the raw data folder structure\nExpecting two columns (tab delimited) with column headings SEQUENCE_ID and SAMPLE_ID", stderr())
+  stop()
+}
+
+first_dedup <- function(r1,r2,o,d){
+  paste("screen_duplicates_PE.py", r1, r2, o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+}
+
+second_seqy <- function(r1,r2,o,minL=150, q=24,d) {
+	paste("seqyclean -qual", q, q, "-c /mnt/home/uirig/user_data/genomes/phage-phiX174.fa -minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(d,"preprocessing_output.txt"),sep=" ")
+}
+
+third_flash <- function(r1,r2,o,overlap=275,d){
+	paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, ">>", file.path(d,"preprocessing_output.txt"),sep="")
+}
+
+fourth_link <- function(se1,se2,r1,r2,o){
+  require("ShortRead")
+  ## first merge the 2 SE files
+  fq <- readFastq(c(se1,se2))
+  se <- file.path(dirname(se1),"merged_SE_files.fastq")
+  writeFastq(fq,se)
+	paste("ln -sf",se,paste(o,"merged.fastq",sep="_"),";ln -sf",r1,paste(o,"notcombined_PE1.fastq",sep="_"),";ln -sf",r2,paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
+}
+
+r454_seqy <- function(sff,o,minL=225,q=24,d){
+	paste("seqyclean -qual",q,q,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(d,"preprocessing_output.txt"),sep=" ")
+}
+r454_link <- function(sff,o){
+	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
+}
+
+for (index in seq_along(targets$SEQUENCE_ID)){
+  folder <- targets$SEQUENCE_ID[index]
+  sample <- targets$SAMPLE_ID[index]
+  write(paste("Processing folder:",folder,sep=" "),stdout())
+  if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
+    
+    ## first remove duplicates
+    Read1 <- dir(path=file.path(Raw_Folder,folder),pattern="R1_[0-9]+.fastq.gz$",full.names=T)
+    Read2 <- dir(path=file.path(Raw_Folder,folder),pattern="R2_[0-9]+.fastq.gz$",full.names=T)
+    if (length(Read1) > 1){
+      write(paste("\tjoining read files",sep=" "),stdout())
+      fq1 <- readFastq(Read1)
+      fq2 <- readFastq(Read2)
+      folder <- paste(folder,"combined",sep=".")
+      dir.create(file.path(Raw_Folder,folder),recursive=TRUE,showWarnings=FALSE)
+      Read1 <- file.path(Raw_Folder,folder,"combined_R1.fastq")
+      Read2 <- file.path(Raw_Folder,folder,"combined_R2.fastq")
+      if(file.exists(Read1)) file.remove(Read1)
+      if(file.exists(Read2)) file.remove(Read2)
+      writeFastq(fq1,Read1)
+      writeFastq(fq2,Read2)
+    }
+    
+    if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
+    dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
+    
+    output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
+    write(paste("\tde-duplicating reads",sep=" "),stdout())
+    system(first_dedup(Read1,Read2,output,file.path(Clean_Folder,sample)))
+
+    ## second use seqyclean to remove contaminant, adapters and trim for quality
+    Read1 <- paste(output,"_nodup_PE1.fastq",sep="")
+    Read2 <- paste(output,"_nodup_PE2.fastq",sep="")
+    output <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150",sep="_"))
+    write(paste("\trunning seqyclean",sep=" "),stdout())
+    system(second_seqy(Read1, Read2, output, minL=150, q=24, file.path(Clean_Folder,sample)))
+
+    ## third use flash to join overlapping paired-end reads
+    Read1 <- paste(output,"_PE1.fastq",sep="")
+    Read2 <- paste(output,"_PE2.fastq",sep="")
+    output <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150",sep="_"))
+    write(paste("\tjoining reads",sep=" "),stdout())
+    system(third_flash(Read1, Read2,output,overlap=275,file.path(Clean_Folder,sample)))
+
+    ## link the final files to another folder
+    SE1 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150_SE.fastq",sep="_"))
+    SE2 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150.extendedFrags.fastq",sep="_"))
+
+    Read1 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150.notCombined_1.fastq",sep="_"))
+    Read2 <- file.path(getwd(),Clean_Folder,folder,paste(sample,"dedup_q24min150.notCombined_2.fastq",sep="_"))
+    output <- file.path(getwd(),Final_Folder,sample,sample)
+    
+    if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
+    dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
+    write(paste("\tcreating links to final files in",Final_Folder,sep=" "),stdout())
+    system(fourth_link(SE1,SE2,Read1,Read2,output))
+    ## end preprocessing
+  } else { ## 454 READS
+    SFF <- file.path(Raw_Folder,folder)
+    folder <- sub(".sff","",folder)
+    output <- file.path(getwd(),Clean_Folder,sample,paste(sample,"q20min250",sep="_"))
+    system(r454_seqy(SFF,output,minL=250,q=20,file.path(getwd(),Clean_Folder,sample)))
+    SFF <- paste(output,"sff",sep=".")
+    output <- file.path(getwd(),Final_Folder,sample,sample)
+    dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
+    system(r454_link(SFF,output))
+  }	
+}
+
+write("Finished processing samples",stdout())
+
