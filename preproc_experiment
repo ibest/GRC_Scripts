@@ -7,11 +7,20 @@ suppressPackageStartupMessages(library("optparse"))
 # help="Show this help message and exit")
 option_list <- list(
   make_option(c("-f", "--file"), type="character", default="samples.txt",
-              help="The filename of the sample file",
+              help="The filename of the sample file, default is samples.txt",
               dest="samplesFile", metavar="sample file"),
   make_option(c("-dir", "--directory"), type="character", default="00-RawData",
-              help="Directory where the raw sequence data is stored",
+              help="Directory where the raw sequence data is stored, default is 00-RawData",
               dest="Raw_Folder", metavar="raw folder")
+  make_option(c("-qual", "--quality"), type="numeric", default=24,
+              help="Quality score to use during lucy trimming, default is 24",
+              dest="qual", metavar="quality")
+  make_option(c("-minL", "--miniumumLength"), type="numeric", default=150,
+              help="Discard reads less then minimum length, default is 150",
+              dest="minL", metavar="min length")
+  make_option(c("-overlap", "--overlap"), type="numeric", default=275,
+              help="Overlap parameter for flash, default is 275",
+              dest="overlap", metavar="overlap")
 )
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults,
@@ -21,6 +30,7 @@ if ( !file.exists(opt$samplesFile) ) {
   write(paste("Sample file",opt$samplesFile,"does not exist\n"), stderr())
   stop()
 }
+
 targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
 
 write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())
@@ -106,14 +116,14 @@ for (index in seq_along(targets$SEQUENCE_ID)){
     Read2 <- paste(output,"_nodup_PE2.fastq",sep="")
     output <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150",sep="_"))
     write(paste("\trunning seqyclean",sep=" "),stdout())
-    system(second_seqy(Read1, Read2, output, minL=150, q=24, file.path(Clean_Folder,sample)))
+    system(second_seqy(Read1, Read2, output, minL=opt$minL, q=opt$qual, file.path(Clean_Folder,sample)))
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
     Read2 <- paste(output,"_PE2.fastq",sep="")
     output <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150",sep="_"))
     write(paste("\tjoining reads",sep=" "),stdout())
-    system(third_flash(Read1, Read2,output,overlap=275,file.path(Clean_Folder,sample)))
+    system(third_flash(Read1, Read2,output,overlap=opt$overlap,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
     SE1 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"dedup_q24min150_SE.fastq",sep="_"))
