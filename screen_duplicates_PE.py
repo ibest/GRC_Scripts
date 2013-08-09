@@ -88,6 +88,7 @@ def main(infile1, infile2, outfile1, outfile2):
     except StopIteration:
         pass
     finally:
+#Print final output
         print "Finished processing one pair of files."
         print "Final:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i,2), "| reads/sec:", round(i/(time.time() - start),0)
 
