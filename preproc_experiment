@@ -120,7 +120,7 @@ for (index in seq_along(targets$SEQUENCE_ID)){
 #    }
     
     if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
-    di r.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
+    dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
     write(paste("\tde-duplicating reads",sep=" "),stdout())
