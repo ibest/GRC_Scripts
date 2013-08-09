@@ -31,6 +31,9 @@ if ( !file.exists(opt$samplesFile) ) {
   stop()
 }
 
+## test
+# opt <- list(samplesFile="samples.txt",Raw_Folder="00-RawData",qual=24,minL=150,overlap=275)
+
 targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
 
 write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())
@@ -74,6 +77,18 @@ fourth_link <- function(se1,se2,r1,r2,o){
 	paste("ln -sf",se,paste(o,"merged.fastq",sep="_"),";ln -sf",r1,paste(o,"notcombined_PE1.fastq",sep="_"),";ln -sf",r2,paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
 }
 
+report <- function(d){
+  output <- readLines(file.path(d,"preprocessing_output.txt"))
+  dedup_res <- output[substring(output,1,6) == "Final:"]
+  seqyclean_res <- output[(rev(which(output == "----------------------Summary for PE & SE----------------------"))[1]+1):(rev(which(output == "====================Done cleaning===================="))[1]-1)]
+  flash_res <- output[(which(output=="[FLASH] Read combination statistics:")+1):(which(output=="[FLASH] Read combination statistics:")+4)]
+
+  dedup_data <- strsplit(dedup_res,split=" \\| | ")[[1]][seq(3,13,by=2)]
+  names(dedup_data) <- c("")
+
+}
+
+
 r454_seqy <- function(sff,o,minL=225,q=24,d){
 	paste("seqyclean -qual",q,q,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(d,"preprocessing_output.txt"),sep=" ")
 }
@@ -105,7 +120,7 @@ for (index in seq_along(targets$SEQUENCE_ID)){
     }
     
     if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
-    dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
+    di r.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
     write(paste("\tde-duplicating reads",sep=" "),stdout())

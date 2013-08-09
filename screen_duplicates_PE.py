@@ -1,63 +1,63 @@
 #!/usr/bin/env python
 """
-# Copyright 2013, Sam Hunter
+# Copyright 2013, Sam Hunter, Brice Sarver, Matt Settles
+# Modified Aug 9, 2013
 """
 
 
 from Bio import SeqIO
 from optparse import OptionParser
-import sys
+import sys, os, os.path, time, gzip
 from collections import Counter
-import time
 
 ## Parse options and setup ##
-usage = "usage %prog read1.fastq read2.fastq output_base"
+usage = "usage %prog -d [path to directory of raw reads] -o [path to output director]"
+#usage = "usage %prog read1.fastq read2.fastq output_base"
 parser = OptionParser(usage=usage)
-#parser.add_option('-a', '--adapterlength', help="length of adapter, controls max dovetail overlap",
-#                  action="store", type="int", dest="adapterlength", default=30)
+
+parser.add_option('-d', '--directory', help="Directory containing read files to de-duplicate",
+    action="store", type="str", dest="sample_dir")
+
+parser.add_option('-o', '--output', help="Directory to output de-duplicated reads",
+    action="store", type="str", dest="output_dir")
+
 
 (options, args) = parser.parse_args()
 
-#adapterlength = options.adapterlength
-#minoverlap = 10  # minimum value at which at 90% overlap will be accepted (10bp overlap, 9/10 match)
-
-if len(args) != 3:
+if len(args) != 2:
     parser.print_help()
     sys.exit()
 
-infile1 = args[0]
-infile2 = args[1]
+sample_dir = options.sample_dir
+output_dir = options.output_dir
 
+#kindly provided by http://stackoverflow.com/questions/7099290/how-to-ignore-hidden-files-using-os-listdir-python
+#glob.glob will list hidden files
+#this replaces that functionality when hidden files exist, like in my reads from Berkeley
+def listdir_nohidden(path):
+    for f in os.listdir(path):
+        if not f.startswith('.'):
+            yield f
+
+
+def main(infile1, infile2, outfile1, outfile2):
 #Open inputs:
-if infile1.split(".")[-1] == "gz":
-    import gzip
-    iter1 = SeqIO.parse(gzip.open(infile1, 'rb'), 'fastq')
-    iter2 = SeqIO.parse(gzip.open(infile2, 'rb'), 'fastq')
-elif infile1.split(".")[-1] == "fastq":
-    iter1 = SeqIO.parse(open(infile1, 'r'), 'fastq')
-    iter2 = SeqIO.parse(open(infile2, 'r'), 'fastq')
-else:
-    iter1 = SeqIO.parse(open(infile1, 'r'), 'fastq')
-    iter2 = SeqIO.parse(open(infile2, 'r'), 'fastq')
+    if infile1.split(".")[-1] == "gz":
+        import gzip
+        iterator1 = SeqIO.parse(gzip.open(infile1, 'rb'), 'fastq')
+        iterator2 = SeqIO.parse(gzip.open(infile2, 'rb'), 'fastq')
+    elif infile1.split(".")[-1] == "fastq":
+        iterator1 = SeqIO.parse(open(infile1, 'r'), 'fastq')
+        iterator2 = SeqIO.parse(open(infile2, 'r'), 'fastq')
+    else:
+        iterator1 = SeqIO.parse(open(infile1, 'r'), 'fastq')
+        iterator2 = SeqIO.parse(open(infile2, 'r'), 'fastq')
 
-pe1_outf = open(args[2] + "_nodup_PE1.fastq", 'w')
-pe2_outf = open(args[2] + "_nodup_PE2.fastq", 'w')
-
-#pe2_outf = gzip.open(args[2] + "_nodup_PE2.fastq.gz", 'wb')
-
-
-def main():
-    #main part of the program
-    count = Counter()
-    i = 0
-    duplicates = 0
-    rev = 0
-    start = time.time()
     try:
         while 1:
             c = 0
-            seq1 = iter1.next()
-            seq2 = iter2.next()
+            seq1 = iterator1.next()
+            seq2 = iterator2.next()
             #comb = seq1.seq.tostring() + seq2.seq.tostring()
             comb = seq1[10:35] + seq2[10:35]
             rcomb = comb.reverse_complement()
@@ -71,18 +71,38 @@ def main():
                 count[comb] += 1
                 c = count[comb]
             if c == 1:
-                SeqIO.write(seq1, pe1_outf, "fastq")
-                SeqIO.write(seq2, pe2_outf, "fastq")
+                SeqIO.write(seq1, outfile1, "fastq")
+                SeqIO.write(seq2, outfile2, "fastq")
             else:
                 duplicates += 1
             i += 1
             if i % 10000 == 0:
-                print "Pairs:", i, "Duplicates:", duplicates, "| fw:", duplicates-rev, "| rev", rev, "| percent:", 100.0*duplicates/i, "| reads/second:", i/(time.time() - start)
+            print "Pairs:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", 100.0*duplicates/i, "| reads/sec:", i/(time.time() - start)
 
     except StopIteration:
         pass
     finally:
-        print "Finished processing"
-        print "Final:", i, "Duplicates:", duplicates, "| fw:", duplicates-rev, "| rev", rev, "| percent:", 100.0*duplicates/i, "| reads/second:", i/(time.time() - start)
+        print "Finished processing one pair of files."
+        print "Final:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", 100.0*duplicates/i, "| reads/sec:", i/(time.time() - start)
 
-main()
+
+    #main part of the program
+count = Counter()
+i = 0
+duplicates = 0
+rev = 0
+start = time.time()
+
+outfile1 = gzip.open(output_dir + "_nodup_PE1.fastq.gz", 'wb')
+outfile2 = gzip.open(output_dir + "_nodup_PE2.fastq.gz", 'wb')
+    
+files = listdir_nohidden('./' + sample_dir)
+    
+for f in files:
+    if "R1" in f:
+        print f
+        infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
+        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "R2".join(f.split("R1"))))
+        main(infile1, infile2, outfile1, outfile2)
+outfile1.close()
+outfile2.close()
