@@ -57,7 +57,7 @@ if (any(is.na(match(targets$SEQUENCE_ID,dir(path=Raw_Folder))))){
 }
 
 first_dedup <- function(r,o,d){
-  paste("screen_duplicates_PE.py", r, o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+  paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
 second_seqy <- function(r1,r2,o,minL=150, q=24,d) {

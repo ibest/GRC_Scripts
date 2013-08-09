@@ -24,7 +24,7 @@ parser.add_option('-o', '--output', help="Directory to output de-duplicated read
 
 (options, args) = parser.parse_args()
 
-if len(args) != 2:
+if len(args) != 0:
     parser.print_help()
     sys.exit()
 
@@ -84,7 +84,7 @@ def main(infile1, infile2, outfile1, outfile2):
             i += 1
             if i % 100000 == 0:
               print "Pairs:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i,2), "| reads/sec:", rount(i/(time.time() - start),0)
-
+            
     except StopIteration:
         pass
     finally:
