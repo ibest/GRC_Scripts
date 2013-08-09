@@ -82,8 +82,8 @@ def main(infile1, infile2, outfile1, outfile2):
             else:
                 duplicates += 1
             i += 1
-            if i % 10000 == 0:
-            print "Pairs:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", rount(100.0*duplicates/i,2), "| reads/sec:", rount(i/(time.time() - start),0)
+            if i % 100000 == 0:
+              print "Pairs:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i,2), "| reads/sec:", rount(i/(time.time() - start),0)
 
     except StopIteration:
         pass
