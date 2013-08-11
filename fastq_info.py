@@ -61,6 +61,7 @@ def main(infile1, outfile1):
             bases += len(seq1)
             lbases += len(seq1)
             lqual += sum(seq1.letter_annotations['phred_quality'])/lbases
+            print lqual + '\t'
             
     except StopIteration:
         pass
