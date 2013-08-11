@@ -60,7 +60,7 @@ def main(infile1, outfile1):
             lcount += 1
             bases += len(seq1)
             lbases += len(seq1)
-            lqual += sum(read1.letter_annotations['phred_quality'])/lbases
+            lqual += sum(seq1.letter_annotations['phred_quality'])/lbases
             
     except StopIteration:
         pass
