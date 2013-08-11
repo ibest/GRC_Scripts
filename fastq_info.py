@@ -81,7 +81,7 @@ outfile1 = open(os.path.realpath(os.path.join(os.getcwd(), sample_dir, "read_dat
 files = listdir_nohidden('./' + sample_dir)
     
 for f in files:
-    if "fastq" in f
+    if ["fastq","fq"] in f:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         main(infile1, outfile1)
