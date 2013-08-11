@@ -86,7 +86,7 @@ report_fun <- function(d,f){
 
 
 r454_seqy <- function(sff,o,minL=225,q=24,d){
-	paste("seqyclean -qual",q,q,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(d,"preprocessing_output.txt"),sep=" ")
+	paste("seqyclean -qual",q,q,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(d,"preprocessing_output_454.txt"),sep=" ")
 }
 r454_link <- function(sff,o){
 	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
@@ -135,10 +135,12 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
 
     ## end preprocessing
   } else { ## 454 READS
+    qual454 <- 20
+    min454 <- 250
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
-    output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual,"min",minL,sep=""),sep="_"))
-    system(r454_seqy(SFF,output,minL=250,q=20,file.path(getwd(),Clean_Folder,sample)))
+    output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
+    system(r454_seqy(SFF,output,minL=min454,q=qual454,file.path(getwd(),Clean_Folder,sample)))
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
