@@ -67,10 +67,10 @@ def main(infile1, outfile1):
     finally:
         print "Finished processing file" +  infile1
         outfile1.write("file\t" + infile1)
-        outfile1.write("nreads\t" + lcount)
-        outfile1.write("nbases\t" + lbases)
-        outfile1.write("avgBases\t" + lbases/lcount)
-        outfile1.wrtie("avgQual\t" + lqual/lcount)
+        outfile1.write("nreads\t" + str(lcount))
+        outfile1.write("nbases\t" + str(lbases))
+        outfile1.write("avgBases\t" + str(round(lbases/lcount,0)))
+        outfile1.write("avgQual\t" + str(round(lqual/lcount,1)))
 
 #main part of the program
 
@@ -87,8 +87,8 @@ for f in files:
         main(infile1, outfile1)
 
 outfile1.write("directory\t" + sample_dir)
-outfile1.write("treads\t" + count)
-outfile1.write("tbases\t" + bases)
+outfile1.write("treads\t" + str(count))
+outfile1.write("tbases\t" + str(bases))
 
 
 outfile1.close()
