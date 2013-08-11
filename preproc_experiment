@@ -1,6 +1,8 @@
 #!/usr/bin/env Rscript
 
+suppressPackageStartupMessages(library("ShortRead"))
 suppressPackageStartupMessages(library("optparse"))
+suppressPackageStartupMessages(library("parallel"))
 # specify our desired options in a list
 # by default OptionParser will add an help option equivalent to
 # make_option(c("-h", "--help"), action="store_true", default=FALSE,
@@ -20,42 +22,18 @@ option_list <- list(
               dest="minL", metavar="min length"),
   make_option(c("-o", "--overlap"), type="integer", default=275,
               help="Overlap parameter for flash, default is 275",
-              dest="overlap", metavar="overlap")
+              dest="overlap", metavar="overlap"),
+  make_option(c("-p", "--processors"), type="integer", default=1,
+              help="number of processors to use, default is 1",
+              dest="procs", metavar="processors")
 )
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults,
 opt <- parse_args(OptionParser(option_list=option_list))
 
-if ( !file.exists(opt$samplesFile) ) {
-  write(paste("Sample file",opt$samplesFile,"does not exist\n"), stderr())
-  stop()
-}
-
-## test
-# opt <- list(samplesFile="samples.txt",Raw_Folder="00-RawData",qual=24,minL=150,overlap=275)
-
-targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
-
-write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())
-
-suppressPackageStartupMessages(library("ShortRead"))
-
-
-### targets$SEQUENCE_ID should be the folder name inside of Raw_Folder
-### targets$SAMPLE_ID should be the sample name
-
-## directory structure
-Raw_Folder <- opt$Raw_Folder
-## assumes Illumina data is under a folder, named targets$SEQUENCE_ID and 454 sff files are just files in the folder
-Clean_Folder <- "01-Clean_Merge"
-
-Final_Folder <- "02-Cleaned"
-
-if (any(is.na(match(targets$SEQUENCE_ID,dir(path=Raw_Folder))))){
-  write("targets file does not match the raw data folder structure\nExpecting two columns (tab delimited) with column headings SEQUENCE_ID and SAMPLE_ID", stderr())
-  stop()
-}
-
+####################################################
+### FUNCTIONS
+####################################################
 first_dedup <- function(r,o,d){
   paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
@@ -79,7 +57,11 @@ fourth_link <- function(se1,se2,r1,r2,o){
   paste("ln -sf",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";ln -sf",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";ln -sf",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
 }
 
-report_fun <- function(d){
+final_report_fun <- function(f,o){
+  paste("fastq_info.py", "-d",f,">>",file.path(o,"preprocessing_output.txt"))
+}
+
+report_fun <- function(d,f){
   output <- readLines(file.path(d,"preprocessing_output.txt"))
   dedup_res <- output[substring(output,1,6) == "Final:"]
   dedup_res <- rev(dedup_res)[1]
@@ -96,7 +78,10 @@ report_fun <- function(d){
 
   flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
 #  names(flash_data) <- c("Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
-  return(c(dedup_data,seqyclean_data,flash_data))
+
+  final_info <- read.table(file.path(f,"read_data.txt"),sep="\t")
+  final_data <- final_info[,2]
+  return(c(dedup_data,seqyclean_data,flash_data,tail(final_data,2)))
 }
 
 
@@ -107,58 +92,46 @@ r454_link <- function(sff,o){
 	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
 }
 
-
-report <- matrix(NA,ncol=24,nrow=length(targets$SEQUENCE_ID))
-for (index in seq_along(targets$SEQUENCE_ID)){
-  folder <- targets$SEQUENCE_ID[index]
-  sample <- targets$SAMPLE_ID[index]
-  try({report[index,] <- report_fun(file.path(Clean_Folder,sample))})
-}
-report <- as.data.frame(report)
-colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
-rownames(report) <- targets$SAMPLE_ID
-write.table(report,file="preproc_experiment_report.txt",sep="\t",row.names=TRUE,col.names=TRUE,quote=F)
-
-for (index in seq_along(targets$SEQUENCE_ID)){
-  folder <- targets$SEQUENCE_ID[index]
-  sample <- targets$SAMPLE_ID[index]
-  write(paste("Processing folder:",folder,sep=" "),stdout())
-  if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
+process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap){
+    write(paste(samples":Processing folder:",folder,sep=" "),stdout())
+    if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
-#    if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
+    if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
     dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
-    write(paste("\tde-duplicating reads",sep=" "),stdout())
-#    system(first_dedup(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
+    write(paste(samples":\tde-duplicating reads",sep=" "),stdout())
+    system(first_dedup(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
     Read2 <- paste(output,"nodup_PE2.fastq.gz",sep="_")
-    output <- file.path(Clean_Folder,sample,paste(sample,"nodup_q24min150",sep="_"))
-    write(paste("\trunning seqyclean",sep=" "),stdout())
-#    system(second_seqy(Read1, Read2, output, minL=opt$minL, q=opt$qual, file.path(Clean_Folder,sample)))
+    output <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),sep="_"))
+    write(paste(samples":\trunning seqyclean",sep=" "),stdout())
+    system(second_seqy(Read1, Read2, output, minL=minL, q=qual, file.path(Clean_Folder,sample)))
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
     Read2 <- paste(output,"_PE2.fastq",sep="")
-    output <- file.path(Clean_Folder,sample,paste(sample,"nodup_q24min150",sep="_"))
-    write(paste("\tjoining reads",sep=" "),stdout())
-#    system(third_flash(Read1, Read2,output,overlap=opt$overlap,file.path(Clean_Folder,sample)))
+    output <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),sep="_"))
+    write(paste(samples":\tjoining reads",sep=" "),stdout())
+    system(third_flash(Read1, Read2,output,overlap=overlap,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
-    SE1 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150_SE.fastq",sep="_"))
-    SE2 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150.extendedFrags.fastq",sep="_"))
+    SE1 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),"_SE.fastq",sep="_"))
+    SE2 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),".extendedFrags.fastq",sep="_"))
 
-    Read1 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150.notCombined_1.fastq",sep="_"))
-    Read2 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150.notCombined_2.fastq",sep="_"))
+    Read1 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),".notCombined_1.fastq",sep="_"))
+    Read2 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),".notCombined_2.fastq",sep="_"))
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
-    write(paste("\tcreating links to final files in",Final_Folder,sep=" "),stdout())
+    write(paste(samples":\tcreating links to final files in",file.path(Final_Folder,sample),sep=" "),stdout())
     system(fourth_link(SE1,SE2,Read1,Read2,output))
 
+    write(paste(samples":\tcreating report of final files in",file.path(Final_Folder,sample),sep=" "),stdout())
+    system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))
 
     ## end preprocessing
   } else { ## 454 READS
@@ -172,6 +145,60 @@ for (index in seq_along(targets$SEQUENCE_ID)){
     system(r454_link(SFF,output))
   }	
 }
+##########################################
+
+##########################################
+## SETUP PROCESSING
+## test
+# opt <- list(samplesFile="samples.txt",Raw_Folder="00-RawData",qual=24,minL=150,overlap=275,procs=1)
+
+if ( !file.exists(opt$samplesFile) ) {
+  write(paste("Sample file",opt$samplesFile,"does not exist\n"), stderr())
+  stop()
+}
+
+### opt$samplesFile$SEQUENCE_ID should be the folder name inside of Raw_Folder
+### opt$samplesFile$SAMPLE_ID should be the sample name
+targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
+
+if (detectCores() < opt$procs){
+  write(paste("number of cores specified (",opt$procs,") is greater than the number of cores available (",detectCores(),")",sep=" "),stdout())
+  stop()
+}
+
+##########################################
+## directory structure
+## assumes Illumina data is under a folder, named opt$samplesFile$SEQUENCE_ID and 454 sff files are just files in the folder
+Raw_Folder <- opt$Raw_Folder
+## where preprocessing clean results are saved
+Clean_Folder <- "01-Clean_Merge"
+## final preprocess file are linked (from Clean_Folder) to this folder
+Final_Folder <- "02-Cleaned"
+
+if (any(is.na(match(targets$SEQUENCE_ID,dir(path=Raw_Folder))))){
+  write("samples file does not match the raw data folder structure\nExpecting two columns (tab delimited) with column headings SEQUENCE_ID and SAMPLE_ID", stderr())
+  stop()
+}
+
+##########################################
+### main function
+
+write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())
+
+report <- matrix(NA,ncol=26,nrow=length(targets$SEQUENCE_ID))
+
+mclapply(seq.int(1,nrow(targets)), function(index){
+  folder <- targets$SEQUENCE_ID[index]
+  sample <- targets$SAMPLE_ID[index]
+  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$minL,opt$overlap)})
+  try({report[index,] <- report_fun(file.path(Clean_Folder,sample),file.path(Final_Folder,sample))})
+},mc.cores=opt$procs)
+
+report <- as.data.frame(report)
+
+colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage","Total_nReads","Total_nBases")
+rownames(report) <- targets$SAMPLE_ID
+write.table(report,file="preproc_experiment_report.txt",sep="\t",row.names=TRUE,col.names=TRUE,quote=F)
 
 write("Finished processing samples",stdout())
 
