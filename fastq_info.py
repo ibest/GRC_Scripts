@@ -77,7 +77,7 @@ def main(infile1, outfile1):
 count = 0
 bases = 0
 
-outfile1 = open(os.path.realpath(os.path.join(os.getcwd(), sample_dir, "read_data.txt")))    
+outfile1 = open(os.path.realpath(os.path.join(os.getcwd(), sample_dir, "read_data.txt")),"w+")
 files = listdir_nohidden('./' + sample_dir)
     
 for f in files:
