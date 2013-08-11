@@ -1,8 +1,6 @@
 #!/usr/bin/env Rscript
 
-suppressPackageStartupMessages(library("ShortRead"))
 suppressPackageStartupMessages(library("optparse"))
-suppressPackageStartupMessages(library("parallel"))
 # specify our desired options in a list
 # by default OptionParser will add an help option equivalent to
 # make_option(c("-h", "--help"), action="store_true", default=FALSE,
@@ -31,6 +29,8 @@ option_list <- list(
 # otherwise if options not found on command line then set defaults,
 opt <- parse_args(OptionParser(option_list=option_list))
 
+suppressPackageStartupMessages(library("ShortRead"))
+suppressPackageStartupMessages(library("parallel"))
 ####################################################
 ### FUNCTIONS
 ####################################################
@@ -93,28 +93,28 @@ r454_link <- function(sff,o){
 }
 
 process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap){
-    write(paste(samples":Processing folder:",folder,sep=" "),stdout())
+    write(paste(sample,":Processing folder ",folder,sep=""),stdout())
     if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
     if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
     dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
-    write(paste(samples":\tde-duplicating reads",sep=" "),stdout())
+    write(paste(sample,":\tde-duplicating reads",sep=""),stdout())
     system(first_dedup(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
     Read2 <- paste(output,"nodup_PE2.fastq.gz",sep="_")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),sep="_"))
-    write(paste(samples":\trunning seqyclean",sep=" "),stdout())
+    write(paste(sample,":\trunning seqyclean",sep=""),stdout())
     system(second_seqy(Read1, Read2, output, minL=minL, q=qual, file.path(Clean_Folder,sample)))
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
     Read2 <- paste(output,"_PE2.fastq",sep="")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),sep="_"))
-    write(paste(samples":\tjoining reads",sep=" "),stdout())
+    write(paste(sample,":\tjoining reads",sep=""),stdout())
     system(third_flash(Read1, Read2,output,overlap=overlap,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
@@ -127,10 +127,10 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     
     if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
-    write(paste(samples":\tcreating links to final files in",file.path(Final_Folder,sample),sep=" "),stdout())
+    write(paste(sample,":\tcreating links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(fourth_link(SE1,SE2,Read1,Read2,output))
 
-    write(paste(samples":\tcreating report of final files in",file.path(Final_Folder,sample),sep=" "),stdout())
+    write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))
 
     ## end preprocessing
