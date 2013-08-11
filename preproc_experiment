@@ -119,10 +119,10 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
 
     ## link the final files to another folder
     SE1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),"SE.fastq",sep="_"))
-    SE2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),".extendedFrags.fastq",sep="_"))
+    SE2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,".extendedFrags.fastq",sep=""),sep="_"))
 
-    Read1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),".notCombined_1.fastq",sep="_"))
-    Read2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),".notCombined_2.fastq",sep="_"))
+    Read1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,".notCombined_1.fastq",sep=""),sep="_"))
+    Read2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,".notCombined_2.fastq",sep=""),sep="_"))
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
