@@ -65,7 +65,7 @@ def main(infile1, outfile1):
     except StopIteration:
         pass
     finally:
-        print "Finished processing file" +  infile
+        print "Finished processing file" +  infile1
         outfile1.write("file\t" + infile1)
         outfile1.write("nreads\t" + lcount)
         outfile1.write("nbases\t" + lbases)
@@ -81,7 +81,7 @@ outfile1 = open(os.path.realpath(os.path.join(os.getcwd(), sample_dir, "read_dat
 files = listdir_nohidden('./' + sample_dir)
     
 for f in files:
-    if ["fastq","fq"] in f:
+    if ("fastq" in f) or ("fq" in f):
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         main(infile1, outfile1)
