@@ -106,23 +106,23 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
     Read2 <- paste(output,"nodup_PE2.fastq.gz",sep="_")
-    output <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),sep="_"))
+    output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\trunning seqyclean",sep=""),stdout())
     system(second_seqy(Read1, Read2, output, minL=minL, q=qual, file.path(Clean_Folder,sample)))
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
     Read2 <- paste(output,"_PE2.fastq",sep="")
-    output <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),sep="_"))
+    output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\tjoining reads",sep=""),stdout())
     system(third_flash(Read1, Read2,output,overlap=overlap,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
-    SE1 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),"_SE.fastq",sep="_"))
-    SE2 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),".extendedFrags.fastq",sep="_"))
+    SE1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),"SE.fastq",sep="_"))
+    SE2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),".extendedFrags.fastq",sep="_"))
 
-    Read1 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),".notCombined_1.fastq",sep="_"))
-    Read2 <- file.path(Clean_Folder,sample,paste(sample,"nodup_",paste("q",qual,"min",minL,sep=""),".notCombined_2.fastq",sep="_"))
+    Read1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),".notCombined_1.fastq",sep="_"))
+    Read2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),".notCombined_2.fastq",sep="_"))
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
@@ -137,7 +137,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
   } else { ## 454 READS
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
-    output <- file.path(getwd(),Clean_Folder,sample,paste(sample,"q20min250",sep="_"))
+    output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual,"min",minL,sep=""),sep="_"))
     system(r454_seqy(SFF,output,minL=250,q=20,file.path(getwd(),Clean_Folder,sample)))
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
