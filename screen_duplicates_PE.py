@@ -11,7 +11,7 @@ import sys, os, os.path, time, gzip
 from collections import Counter
 
 ## Parse options and setup ##
-usage = "usage %prog -d [path to directory of raw reads] -o [path to output director]"
+usage = "usage %prog -d [path to directory of raw reads] -o [path to output directory]"
 #usage = "usage %prog read1.fastq read2.fastq output_base"
 parser = OptionParser(usage=usage)
 
@@ -90,8 +90,6 @@ def main(infile1, infile2, outfile1, outfile2):
     finally:
 #Print final output
         print "Finished processing one pair of files."
-        print "Final:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i,2), "| reads/sec:", round(i/(time.time() - start),0)
-
 
     #main part of the program
 count = Counter()
@@ -113,3 +111,6 @@ for f in files:
         main(infile1, infile2, outfile1, outfile2)
 outfile1.close()
 outfile2.close()
+
+print "Final:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i,2), "| reads/sec:", round(i/(time.time() - start),0)
+

@@ -71,21 +71,32 @@ third_flash <- function(r1,r2,o,overlap=275,d){
 fourth_link <- function(se1,se2,r1,r2,o){
   require("ShortRead")
   ## first merge the 2 SE files
-  fq <- readFastq(c(se1,se2))
   se <- file.path(dirname(se1),"merged_SE_files.fastq")
-  writeFastq(fq,se)
-	paste("ln -sf",se,paste(o,"merged.fastq",sep="_"),";ln -sf",r1,paste(o,"notcombined_PE1.fastq",sep="_"),";ln -sf",r2,paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
+  if (!file.exists(se)){
+    fq <- readFastq(c(se1,se2))
+    writeFastq(fq,se)
+	}
+  paste("ln -sf",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";ln -sf",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";ln -sf",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
 }
 
-report <- function(d){
+report_fun <- function(d){
   output <- readLines(file.path(d,"preprocessing_output.txt"))
   dedup_res <- output[substring(output,1,6) == "Final:"]
+  dedup_res <- rev(dedup_res)[1]
   seqyclean_res <- output[(rev(which(output == "----------------------Summary for PE & SE----------------------"))[1]+1):(rev(which(output == "====================Done cleaning===================="))[1]-1)]
   flash_res <- output[(which(output=="[FLASH] Read combination statistics:")+1):(which(output=="[FLASH] Read combination statistics:")+4)]
 
-  dedup_data <- strsplit(dedup_res,split=" \\| | ")[[1]][seq(3,13,by=2)]
-  names(dedup_data) <- c("")
+  dedup_data <- as.numeric(strsplit(dedup_res,split=" \\| | ")[[1]][seq(3,13,by=2)])
+#  dedup_data <- as.numeric(strsplit(dedup_res,split=" \\| | ")[[1]][seq(2,12,by=2)])
+#  names(dedup_data) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec")
 
+  seqyclean_data <- strsplit(seqyclean_res,split=" |%, |, |%")
+  seqyclean_data <- as.numeric( c(seqyclean_data[[1]][c(3,4,6,7)],seqyclean_data[[2]][c(3,4,6,7)],seqyclean_data[[3]][c(5,7)],seqyclean_data[[4]][c(5,7)],seqyclean_data[[5]][5],seqyclean_data[[6]][5]))
+#  names(seqyclean_data) <- c("Pairs_Kept","Kept_Percentage","Kept_Bases","Discarded_Kept","Discarded_Percentage","Discarded_Bases","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length")
+
+  flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
+#  names(flash_data) <- c("Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
+  return(c(dedup_data,seqyclean_data,flash_data))
 }
 
 
@@ -96,62 +107,59 @@ r454_link <- function(sff,o){
 	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
 }
 
+
+report <- matrix(NA,ncol=24,nrow=length(targets$SEQUENCE_ID))
+for (index in seq_along(targets$SEQUENCE_ID)){
+  folder <- targets$SEQUENCE_ID[index]
+  sample <- targets$SAMPLE_ID[index]
+  try({report[index,] <- report_fun(file.path(Clean_Folder,sample))})
+}
+report <- as.data.frame(report)
+colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
+rownames(report) <- targets$SAMPLE_ID
+write.table(report,file="preproc_experiment_report.txt",sep="\t",row.names=TRUE,col.names=TRUE,quote=F)
+
 for (index in seq_along(targets$SEQUENCE_ID)){
   folder <- targets$SEQUENCE_ID[index]
   sample <- targets$SAMPLE_ID[index]
   write(paste("Processing folder:",folder,sep=" "),stdout())
   if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
-#    ## first remove duplicates
-#    Read1 <- dir(path=file.path(Raw_Folder,folder),pattern="R1_[0-9]+.fastq.gz$",full.names=T)
-#    Read2 <- dir(path=file.path(Raw_Folder,folder),pattern="R2_[0-9]+.fastq.gz$",full.names=T)
-#    if (length(Read1) > 1){
-#      write(paste("\tjoining read files",sep=" "),stdout())
-#      fq1 <- readFastq(Read1)
-#      fq2 <- readFastq(Read2)
-#      folder <- paste(folder,"combined",sep=".")
-#      dir.create(file.path(Raw_Folder,folder),recursive=TRUE,showWarnings=FALSE)
-#      Read1 <- file.path(Raw_Folder,folder,"combined_R1.fastq")
-#      Read2 <- file.path(Raw_Folder,folder,"combined_R2.fastq")
-#      if(file.exists(Read1)) file.remove(Read1)
-#      if(file.exists(Read2)) file.remove(Read2)
-#      writeFastq(fq1,Read1)
-#      writeFastq(fq2,Read2)
-#    }
-    
-    if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
+#    if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
     dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
     write(paste("\tde-duplicating reads",sep=" "),stdout())
-    system(first_dedup(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
+#    system(first_dedup(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
     Read2 <- paste(output,"nodup_PE2.fastq.gz",sep="_")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup_q24min150",sep="_"))
     write(paste("\trunning seqyclean",sep=" "),stdout())
-    system(second_seqy(Read1, Read2, output, minL=opt$minL, q=opt$qual, file.path(Clean_Folder,sample)))
+#    system(second_seqy(Read1, Read2, output, minL=opt$minL, q=opt$qual, file.path(Clean_Folder,sample)))
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
     Read2 <- paste(output,"_PE2.fastq",sep="")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup_q24min150",sep="_"))
     write(paste("\tjoining reads",sep=" "),stdout())
-    system(third_flash(Read1, Read2,output,overlap=opt$overlap,file.path(Clean_Folder,sample)))
+#    system(third_flash(Read1, Read2,output,overlap=opt$overlap,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
-    SE1 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"nodup_q24min150_SE.fastq",sep="_"))
-    SE2 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"nodup_q24min150.extendedFrags.fastq",sep="_"))
+    SE1 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150_SE.fastq",sep="_"))
+    SE2 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150.extendedFrags.fastq",sep="_"))
 
-    Read1 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"nodup_q24min150.notCombined_1.fastq",sep="_"))
-    Read2 <- file.path(getwd(),Clean_Folder,sample,paste(sample,"nodup_q24min150.notCombined_2.fastq",sep="_"))
+    Read1 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150.notCombined_1.fastq",sep="_"))
+    Read2 <- file.path(Clean_Folder,sample,paste(sample,"dedup_q24min150.notCombined_2.fastq",sep="_"))
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     write(paste("\tcreating links to final files in",Final_Folder,sep=" "),stdout())
     system(fourth_link(SE1,SE2,Read1,Read2,output))
+
+
     ## end preprocessing
   } else { ## 454 READS
     SFF <- file.path(Raw_Folder,folder)
