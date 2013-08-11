@@ -54,13 +54,12 @@ def main(infile1, outfile1):
 
     try:
         while 1:
-            c = 0
             seq1 = iterator1.next()
             count += 1
             lcount += 1
             bases += len(seq1)
             lbases += len(seq1)
-            lqual += sum(seq1.letter_annotations['phred_quality'])/lbases
+            lqual += sum(seq1.letter_annotations['phred_quality'])/len(seq1)
             print str(lqual) + '\t'
             
     except StopIteration:
