@@ -66,11 +66,11 @@ def main(infile1, outfile1):
         pass
     finally:
         print "Finished processing file" +  infile1
-        outfile1.write("file\t" + infile1)
-        outfile1.write("nreads\t" + str(lcount))
-        outfile1.write("nbases\t" + str(lbases))
-        outfile1.write("avgBases\t" + str(round(lbases/lcount,0)))
-        outfile1.write("avgQual\t" + str(round(lqual/lcount,1)))
+        outfile1.write("file\t" + infile1 + "\n")
+        outfile1.write("nreads\t" + str(lcount) + "\n")
+        outfile1.write("nbases\t" + str(lbases) + "\n")
+        outfile1.write("avgBases\t" + str(round(lbases/lcount,0)) + "\n")
+        outfile1.write("avgQual\t" + str(round(lqual/lcount,1)) + "\n")
 
 #main part of the program
 
@@ -86,9 +86,9 @@ for f in files:
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         main(infile1, outfile1)
 
-outfile1.write("directory\t" + sample_dir)
-outfile1.write("treads\t" + str(count))
-outfile1.write("tbases\t" + str(bases))
+outfile1.write("directory\t" + sample_dir + "\n")
+outfile1.write("treads\t" + str(count) + "\n")
+outfile1.write("tbases\t" + str(bases) + "\n")
 
 
 outfile1.close()
