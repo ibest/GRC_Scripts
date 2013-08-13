@@ -136,7 +136,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     ## end preprocessing
   } else { ## 454 READS
     qual454 <- 20
-    min454 <- 250
+    minL454 <- 250
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
