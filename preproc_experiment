@@ -136,11 +136,11 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     ## end preprocessing
   } else { ## 454 READS
     qual454 <- 20
-    min454 <- 250
+    minL454 <- 250
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
-    system(r454_seqy(SFF,output,minL=min454,q=qual454,file.path(getwd(),Clean_Folder,sample)))
+    system(r454_seqy(SFF,output,minL=minL454,q=qual454,file.path(getwd(),Clean_Folder,sample)))
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
