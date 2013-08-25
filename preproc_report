@@ -13,17 +13,13 @@ option_list <- list(
   make_option(c("-c", "--clean_merge"), type="character", default="01-Clean_Merge",
               help="The Clean Merge folder from preproc_experiment [default %default]",
               dest="Clean_Merge", metavar="clean merge folder"),
-  make_option(c("-d", "--final_folder"), type="character", default="01-Final_Folder",
+  make_option(c("-d", "--final_folder"), type="character", default="02-Cleaned",
               help="The Final Folder from preproc_experiment [default %default]",
               dest="Final_Folder", metavar="final folder")
 )
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults,
 opt <- parse_args(OptionParser(option_list=option_list))
-
-suppressPackageStartupMessages(library("ShortRead"))
-suppressPackageStartupMessages(library("parallel"))
-
 
 report_fun <- function(d,f){
   output <- readLines(file.path(d,"preprocessing_output.txt"))
