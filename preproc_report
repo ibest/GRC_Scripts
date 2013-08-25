@@ -1,0 +1,81 @@
+#!/usr/bin/env Rscript
+
+
+suppressPackageStartupMessages(library("optparse"))
+# specify our desired options in a list
+# by default OptionParser will add an help option equivalent to
+# make_option(c("-h", "--help"), action="store_true", default=FALSE,
+# help="Show this help message and exit")
+option_list <- list(
+  make_option(c("-f", "--file"), type="character", default="samples.txt",
+              help="The filename of the sample file [default %default]",
+              dest="samplesFile", metavar="sample file"),
+  make_option(c("-c", "--clean_merge"), type="character", default="01-Clean_Merge",
+              help="The Clean Merge folder from preproc_experiment [default %default]",
+              dest="Clean_Merge", metavar="clean merge folder"),
+  make_option(c("-d", "--final_folder"), type="character", default="01-Final_Folder",
+              help="The Final Folder from preproc_experiment [default %default]",
+              dest="Final_Folder", metavar="final folder")
+)
+# get command line options, if help option encountered print help and exit,
+# otherwise if options not found on command line then set defaults,
+opt <- parse_args(OptionParser(option_list=option_list))
+
+suppressPackageStartupMessages(library("ShortRead"))
+suppressPackageStartupMessages(library("parallel"))
+
+
+report_fun <- function(d,f){
+  output <- readLines(file.path(d,"preprocessing_output.txt"))
+  dedup_res <- output[substring(output,1,6) == "Final:"]
+  dedup_res <- rev(dedup_res)[1]
+  seqyclean_res <- output[(rev(which(output == "----------------------Summary for PE & SE----------------------"))[1]+1):(rev(which(output == "====================Done cleaning===================="))[1]-1)]
+  flash_res <- output[(which(output=="[FLASH] Read combination statistics:")+1):(which(output=="[FLASH] Read combination statistics:")+4)]
+  
+  dedup_data <- as.numeric(strsplit(dedup_res,split=" \\| | ")[[1]][seq(3,13,by=2)])
+  #  dedup_data <- as.numeric(strsplit(dedup_res,split=" \\| | ")[[1]][seq(2,12,by=2)])
+  #  names(dedup_data) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec")
+  
+  seqyclean_data <- strsplit(seqyclean_res,split=" |%, |, |%")
+  seqyclean_data <- as.numeric( c(seqyclean_data[[1]][c(3,4,6,7)],seqyclean_data[[2]][c(3,4,6,7)],seqyclean_data[[3]][c(5,7)],seqyclean_data[[4]][c(5,7)],seqyclean_data[[5]][5],seqyclean_data[[6]][5]))
+  #  names(seqyclean_data) <- c("Pairs_Kept","Kept_Percentage","Kept_Bases","Discarded_Kept","Discarded_Percentage","Discarded_Bases","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length")
+  
+  flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
+  #  names(flash_data) <- c("Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
+  
+  final_info <- read.table(file.path(f,"read_data.txt"),sep="\t")
+  final_data <- final_info[,2]
+  return(c(dedup_data,seqyclean_data,flash_data,tail(final_data,2)))
+}
+
+if ( !file.exists(opt$samplesFile) ) {
+  write(paste("Sample file",opt$samplesFile,"does not exist\n"), stderr())
+  stop()
+}
+
+### opt$samplesFile$SEQUENCE_ID should be the folder name inside of Raw_Folder
+### opt$samplesFile$SAMPLE_ID should be the sample name
+targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
+
+##########################################
+## directory structure
+## assumes Illumina data is under a folder, named opt$samplesFile$SEQUENCE_ID and 454 sff files are just files in the folder
+Raw_Folder <- opt$Raw_Folder
+## where preprocessing clean results are saved
+Clean_Folder <- opt$Clean_Merge
+## final preprocess file are linked (from Clean_Folder) to this folder
+Final_Folder <- opt$Final_Folder
+
+report <- matrix(NA,ncol=26,nrow=length(targets$SEQUENCE_ID))
+for (index in seq_along(targets$SAMPLE_ID)){
+  folder <- targets$SEQUENCE_ID[index]
+  sample <- targets$SAMPLE_ID[index]
+  try({report[index,] <- report_fun(file.path(Clean_Folder,sample),file.path(Final_Folder,sample))})
+}
+report <- as.data.frame(report)
+
+colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage","Total_nReads","Total_nBases")
+rownames(report) <- targets$SAMPLE_ID
+write.table(report,file="preproc_experiment_report.txt",sep="\t",row.names=TRUE,col.names=TRUE,quote=F)
+
+
