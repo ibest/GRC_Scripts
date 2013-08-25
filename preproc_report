@@ -39,7 +39,7 @@ report_fun <- function(d,f){
   flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
   #  names(flash_data) <- c("Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
   
-  final_info <- read.table(file.path(f,"read_data.txt"),sep="\t")
+  final_info <- read.table(file.path(f,"read_data.txt"),sep="\t",as.is=TRUE)
   final_data <- final_info[,2]
   return(c(dedup_data,seqyclean_data,flash_data,tail(final_data,2)))
 }
