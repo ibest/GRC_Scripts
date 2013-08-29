@@ -49,10 +49,10 @@ def main_sff(infile, outfile1):
             seq1 = iterator1.next()
             count += 1
             lcount += 1
-            len = record.annotations["clip_qual_right"] - record.annotations["clip_qual_left"]
+            len = iterator1.annotations["clip_qual_right"] - iterator1.annotations["clip_qual_left"]
             bases += len
             lbases += len
-            lqual += sum(seq1.letter_annotations['phred_quality'][record.annotations["clip_qual_right"]:record.annotations["clip_qual_left"]])/len
+            lqual += sum(iterator1.letter_annotations['phred_quality'][iterator1.annotations["clip_qual_right"]:iterator1.annotations["clip_qual_left"]])/len
 
     except StopIteration:
         pass
