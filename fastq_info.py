@@ -49,7 +49,7 @@ def main_sff(infile):
             seq1 = iterator1.next()
             count += 1
             lcount += 1
-            len = print record.annotations["clip_qual_right"] - print record.annotations["clip_qual_left"]
+            len = record.annotations["clip_qual_right"] - print record.annotations["clip_qual_left"]
             bases += len
             lbases += len
             lqual += sum(seq1.letter_annotations['phred_quality'][record.annotations["clip_qual_right"]:print record.annotations["clip_qual_left"]])/len
