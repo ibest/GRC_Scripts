@@ -34,7 +34,7 @@ def listdir_nohidden(path):
         if not f.startswith('.'):
             yield f
 
-def main_sff(infile):
+def main_sff(infile, outfile1):
 # Set up the global variables
     global count
     global bases
@@ -113,6 +113,10 @@ for f in files:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         main(infile1, outfile1)
+    if ("sff" in f):
+        print f
+        infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
+        main_sff(infile1, outfile1)
 
 outfile1.write("directory\t" + sample_dir + "\n")
 outfile1.write("treads\t" + str(count) + "\n")
