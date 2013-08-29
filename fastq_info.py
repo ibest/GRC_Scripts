@@ -34,6 +34,35 @@ def listdir_nohidden(path):
         if not f.startswith('.'):
             yield f
 
+def main_sff(infile):
+# Set up the global variables
+    global count
+    global bases
+    lcount = 0
+    lbases = 0
+    lqual = 0
+
+# Open inputs:
+    iterator1 = SeqIO.parse(opten(infile, 'r'), "sff")
+    try:
+        while 1:
+            seq1 = iterator1.next()
+            count += 1
+            lcount += 1
+            len = print record.annotations["clip_qual_right"] - print record.annotations["clip_qual_left"]
+            bases += len
+            lbases += len
+            lqual += sum(seq1.letter_annotations['phred_quality'][record.annotations["clip_qual_right"]:print record.annotations["clip_qual_left"]])/len
+
+    except StopIteration:
+        pass
+    finally:
+        print "Finished processing file" +  infile1
+        outfile1.write("file\t" + infile1 + "\n")
+        outfile1.write("nreads\t" + str(lcount) + "\n")
+        outfile1.write("nbases\t" + str(lbases) + "\n")
+        outfile1.write("avgBases\t" + str(round(lbases/lcount,0)) + "\n")
+        outfile1.write("avgQual\t" + str(round(lqual/lcount,1)) + "\n")
 
 def main(infile1, outfile1):
 #Set up the global variables

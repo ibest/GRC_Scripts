@@ -26,7 +26,7 @@ option_list <- list(
               help="number of processors to use [default %default]",
               dest="procs", metavar="processors"),
   make_option(c("-s", "--skip-duduplicates"), action="store_false", default=FALSE,
-              help="do not perform the deduplication step [default %default]",
+              help="do not perform the deduplication step [default %default] NOT FUNCTIONAL YET",
               dest="skip_dedup", metavar="skip")
 )
 # get command line options, if help option encountered print help and exit,
@@ -180,9 +180,9 @@ mclapply(seq.int(1,nrow(targets)), function(index){
 
 ##########################################
 ### Generate Read Report
-write(paste("Generating Final Preprocessing Report for all samples",sep=" "),stdout())
+#write(paste("Generating Final Preprocessing Report for all samples",sep=" "),stdout())
 
-system(paste("preproc_report -f", opt$samplesFile))
+#system(paste("preproc_report -f", opt$samplesFile))
 
-write("Finished processing samples",stdout())
+#write("Finished processing samples",stdout())
 
