@@ -30,7 +30,7 @@ option_list <- list(
               dest="skip_dedup"),
   make_option(c("-c", "--contaminiants-folder"), type="character", default=NULL,
               help="folder name with contaminant sequences in fasta format [default %default]",
-              dest="contaminants"=),
+              dest="contaminants"),
   make_option(c("-v", "--vector-folder"), type="character", default=NULL,
               help="folder name with vector sequences in fasta format [default %default]",
               dest="vector")
