@@ -51,7 +51,7 @@ screen_duplicates <- function(r,o,d){
 
 seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
   vc_param = ""
-  if(file.exists(file.path(folder,"contaminats.fa"))){
+  if(file.exists(file.path(folder,"contaminants.fa"))){
     vc_param=paste(vc_param,"-c",file.path(folder,"contaminants.fa"),sep=" ")
   }
   if(file.exists(file.path(folder,"vector.fa"))){
@@ -78,7 +78,7 @@ link_illumina <- function(se1,se2,r1,r2,o){
 
 seqyclean_454 <- function(sff,o,minL=225,q=24,folder,sample){
     vc_param = ""
-  if(file.exists(file.path(folder,"contaminats.fa"))){
+  if(file.exists(file.path(folder,"contaminants.fa"))){
     vc_param=paste(vc_param,"-c",file.path(folder,"contaminants.fa"),sep=" ")
   }
   if(file.exists(file.path(folder,"vector.fa"))){
