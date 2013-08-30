@@ -91,7 +91,7 @@ link_454 <- function(sff,o){
 }
 
 final_report_fun <- function(f,o){
-  paste("fastq_info.py", "-d",f,">>",file.path(o,"preprocessing_output.txt"))
+  paste("fastq_info.py", "-d",f,">>",file.path(o,"preprocessing_output_final_report.txt"))
 }
 
 get_phiX <- function(){
@@ -157,9 +157,6 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     system(link_454(SFF,output))
   }	
-  write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
-  system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))
-
 }
 
 
@@ -240,6 +237,12 @@ mclapply(seq.int(1,nrow(targets)), function(index){
   sample <- targets$SAMPLE_ID[index]
   try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$minL,opt$overlap)})
 },mc.cores=opt$procs)
+
+mclapply(unique(targets$SAMPLE_ID), function(sample){
+  write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
+  system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))
+},mc.cores=opt$procs)
+
 
 
 ##########################################
