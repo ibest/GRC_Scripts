@@ -52,10 +52,10 @@ screen_duplicates <- function(r,o,d){
 seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
   vc_param = ""
   if(file.exists(file.path(folder,"contaminants.fa"))){
-    vc_param=paste(vc_param,"-c",file.path(folder,"contaminants.fa"),sep=" ")
+    vc_param=paste(vc_param,"-c",file.path(getwd(),folder,"contaminants.fa"),sep=" ")
   }
   if(file.exists(file.path(folder,"vector.fa"))){
-    vc_param=paste(vc_param,"-v",file.path(folder,"vector.fa"),sep=" ")
+    vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
 	paste("seqyclean -qual", q, q, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
 }
@@ -79,10 +79,10 @@ link_illumina <- function(se1,se2,r1,r2,o){
 seqyclean_454 <- function(sff,o,minL=225,q=24,folder,sample){
     vc_param = ""
   if(file.exists(file.path(folder,"contaminants.fa"))){
-    vc_param=paste(vc_param,"-c",file.path(folder,"contaminants.fa"),sep=" ")
+    vc_param=paste(vc_param,"-c",file.path(getwd(),folder,"contaminants.fa"),sep=" ")
   }
   if(file.exists(file.path(folder,"vector.fa"))){
-    vc_param=paste(vc_param,"-v",file.path(folder,"vector.fa"),sep=" ")
+    vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
 	paste("seqyclean -qual",q,q,vc_param,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
 }
