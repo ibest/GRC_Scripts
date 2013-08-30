@@ -49,15 +49,15 @@ screen_duplicates <- function(r,o,d){
   paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
-seqyclean_illimina <- function(r1,r2,o,minL=150, q=24,d) {
+seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
   vc_param = ""
-  if(file.exists(file.path(Clean_Folder,"contaminats.fa"))){
-    vc_param=paste(vc_param,"-c",file.path(Clean_Folder,"contaminants.fa"),sep=" ")
+  if(file.exists(file.path(folder,"contaminats.fa"))){
+    vc_param=paste(vc_param,"-c",file.path(folder,"contaminants.fa"),sep=" ")
   }
-  if(file.exists(file.path(Clean_Folder,"vector.fa"))){
-    vc_param=paste(vc_param,"-v",file.path(Clean_Folder,"vector.fa"),sep=" ")
+  if(file.exists(file.path(folder,"vector.fa"))){
+    vc_param=paste(vc_param,"-v",file.path(folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean -qual", q, q, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(d,"preprocessing_output.txt"),sep=" ")
+	paste("seqyclean -qual", q, q, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
@@ -76,15 +76,15 @@ link_illumina <- function(se1,se2,r1,r2,o){
 }
 
 
-seqyclean_454 <- function(sff,o,minL=225,q=24,d){
+seqyclean_454 <- function(sff,o,minL=225,q=24,folder,sample){
     vc_param = ""
-  if(file.exists(file.path(Clean_Folder,"contaminats.fa"))){
-    vc_param=paste(vc_param,"-c",file.path(Clean_Folder,"contaminants.fa"),sep=" ")
+  if(file.exists(file.path(folder,"contaminats.fa"))){
+    vc_param=paste(vc_param,"-c",file.path(folder,"contaminants.fa"),sep=" ")
   }
-  if(file.exists(file.path(Clean_Folder,"vector.fa"))){
-    vc_param=paste(vc_param,"-v",file.path(Clean_Folder,"vector.fa"),sep=" ")
+  if(file.exists(file.path(folder,"vector.fa"))){
+    vc_param=paste(vc_param,"-v",file.path(folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean -qual",q,q,vc_param,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(d,"preprocessing_output_454.txt"),sep=" ")
+	paste("seqyclean -qual",q,q,vc_param,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
 }
 link_454 <- function(sff,o){
 	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
@@ -122,7 +122,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     Read2 <- paste(output,"nodup_PE2.fastq.gz",sep="_")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\trunning seqyclean",sep=""),stdout())
-    system(seqyclean_illimina(Read1, Read2, output, minL=minL, q=qual, file.path(Clean_Folder,sample)))
+    system(seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample))
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
@@ -151,7 +151,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
-    system(seqyclean_454(SFF,output,minL=minL454,q=qual454,file.path(getwd(),Clean_Folder,sample)))
+    system(seqyclean_454(SFF,output,minL=minL454,q=qual454,Clean_Folder, sample))
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
