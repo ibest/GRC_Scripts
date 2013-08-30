@@ -39,7 +39,7 @@ option_list <- list(
 # otherwise if options not found on command line then set defaults,
 opt <- parse_args(OptionParser(option_list=option_list))
 
-suppressPackabeStartupMessages(library("Biostrings"))
+suppressPackageStartupMessages(library("Biostrings"))
 suppressPackageStartupMessages(library("ShortRead"))
 suppressPackageStartupMessages(library("parallel"))
 ####################################################
