@@ -122,7 +122,10 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     Read2 <- paste(output,"nodup_PE2.fastq.gz",sep="_")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\trunning seqyclean",sep=""),stdout())
-    system(seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample))
+
+    seqyclean_cmd <- seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample)
+    write(seqyclean_cmd,stdout(())
+    system(seqyclean_cmd)
 
     ## third use flash to join overlapping paired-end reads
     Read1 <- paste(output,"_PE1.fastq",sep="")
@@ -151,7 +154,9 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
-    system(seqyclean_454(SFF,output,minL=minL454,q=qual454,Clean_Folder, sample))
+    seqyclean_cmd <- seqyclean_454(SFF,output,minL=minL454,q=qual454,Clean_Folder, sample)    
+    write(seqyclean_cmd,stdout(())
+    system(seqyclean_cmd)
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
     dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
