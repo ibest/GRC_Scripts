@@ -107,8 +107,8 @@ get_phiX <- function(){
 
 
 process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap){
-    write(paste(sample,":Processing folder ",folder,sep=""),stdout())
-    if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
+  write(paste(sample,":Processing folder ",folder,sep=""),stdout())
+  if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
     if(!file.exists(file.path(Clean_Folder, sample))) dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
@@ -154,10 +154,12 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
     seqyclean_cmd <- seqyclean_454(SFF,output,minL=minL454,q=qual454,Clean_Folder, sample)    
+    write(paste(sample,":\trunning 454 seqyclean",sep=""),stdout())
     system(seqyclean_cmd)
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
+    write(paste(sample,":\tcreating 454 links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_454(SFF,output))
   }	
 }
@@ -190,13 +192,11 @@ if (detectCores() < opt$procs){
 Raw_Folder <- opt$Raw_Folder
 ## where preprocessing clean results are saved
 Clean_Folder <- "01-Clean_Merge"
-if(file.exists(file.path(Clean_Folder))) unlink(file.path(Clean_Folder),recursive=TRUE)
-dir.create(file.path(Clean_Folder),recursive=TRUE,showWarnings=FALSE)
+if(!file.exists(file.path(Clean_Folder))) dir.create(file.path(Clean_Folder),recursive=TRUE,showWarnings=FALSE)
 
 ## final preprocess file are linked (from Clean_Folder) to this folder
 Final_Folder <- "02-Cleaned"
-if(file.exists(file.path(Final_Folder))) unlink(file.path(Final_Folder),recursive=TRUE)
-dir.create(file.path(Final_Folder),recursive=TRUE,showWarnings=FALSE)
+if(!file.exists(file.path(Final_Folder))) dir.create(file.path(Final_Folder),recursive=TRUE,showWarnings=FALSE)
 
 if (any(is.na(match(targets$SEQUENCE_ID,dir(path=Raw_Folder))))){
   write("samples file does not match the raw data folder structure\nExpecting two columns (tab delimited) with column headings SEQUENCE_ID and SAMPLE_ID", stderr())
