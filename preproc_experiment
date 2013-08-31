@@ -110,8 +110,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     write(paste(sample,":Processing folder ",folder,sep=""),stdout())
     if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
-    if(file.exists(file.path(Clean_Folder, sample))) unlink(file.path(Clean_Folder, sample),recursive=TRUE)
-    dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
+    if(!file.exists(file.path(Clean_Folder, sample))) dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
     write(paste(sample,":\tde-duplicating reads",sep=""),stdout())
@@ -124,7 +123,6 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     write(paste(sample,":\trunning seqyclean",sep=""),stdout())
 
     seqyclean_cmd <- seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample)
-    write(seqyclean_cmd,stdout())
     system(seqyclean_cmd)
 
     ## third use flash to join overlapping paired-end reads
@@ -142,8 +140,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     Read2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,".notCombined_2.fastq",sep=""),sep="_"))
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
-    if(file.exists(file.path(Final_Folder,sample))) unlink(file.path(Final_Folder,sample),recursive=TRUE)
-    dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
+    if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     write(paste(sample,":\tcreating links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_illumina(SE1,SE2,Read1,Read2,output))
 
@@ -151,15 +148,16 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
   } else { ## 454 READS
     qual454 <- 20
     minL454 <- 250
+  
+    if(!file.exists(file.path(Clean_Folder, sample))) dir.create(file.path(Clean_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
     seqyclean_cmd <- seqyclean_454(SFF,output,minL=minL454,q=qual454,Clean_Folder, sample)    
-    write(seqyclean_cmd,stdout())
     system(seqyclean_cmd)
     SFF <- paste(output,"sff",sep=".")
     output <- file.path(getwd(),Final_Folder,sample,sample)
-    dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
+    if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     system(link_454(SFF,output))
   }	
 }
