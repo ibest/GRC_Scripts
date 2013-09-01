@@ -149,7 +149,6 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
   } else { ## 454 READS
     qual454 <- 20
     minL454 <- 250
-  
     if(!file.exists(file.path(Clean_Folder, sample))) dir.create(file.path(Clean_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
