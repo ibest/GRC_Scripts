@@ -143,7 +143,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     write(paste(sample,":\tcreating links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_illumina(SE1,SE2,Read1,Read2,output))
-    write(paste(sample,":\tFinished,sep=""),stdout())
+    write(paste(sample,":\tFinished",sep=""),stdout())
 
     ## end preprocessing
   } else { ## 454 READS
@@ -161,7 +161,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     write(paste(sample,":\tcreating 454 links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_454(SFF,output))
-    write(paste(sample,":\t454 Finished,sep=""),stdout())
+    write(paste(sample,":\t454 Finished",sep=""),stdout())
   }	
 }
 
