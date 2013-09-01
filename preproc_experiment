@@ -143,6 +143,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     write(paste(sample,":\tcreating links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_illumina(SE1,SE2,Read1,Read2,output))
+    write(paste(sample,":\tFinished,sep=""),stdout())
 
     ## end preprocessing
   } else { ## 454 READS
@@ -161,6 +162,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
     write(paste(sample,":\tcreating 454 links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_454(SFF,output))
+    write(paste(sample,":\t454 Finished,sep=""),stdout())
   }	
 }
 
@@ -239,13 +241,9 @@ mclapply(seq.int(1,nrow(targets)), function(index){
   folder <- targets$SEQUENCE_ID[index]
   sample <- targets$SAMPLE_ID[index]
   try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$minL,opt$overlap)})
-},mc.cores=opt$procs)
-
-mclapply(unique(targets$SAMPLE_ID), function(sample){
   write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
-  system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))
+  try({system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))})
 },mc.cores=opt$procs)
-
 
 
 ##########################################

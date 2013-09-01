@@ -78,7 +78,6 @@ def main(infile1, infile2, outfile1, outfile2):
                 c = count[comb]
             if c == 1:
                 SeqIO.write(seq1, outfile1, "fastq")
-                seq2.id = seq2.id.replace("4:N:0:","2:N:0:")
                 SeqIO.write(seq2, outfile2, "fastq")
             else:
                 duplicates += 1
