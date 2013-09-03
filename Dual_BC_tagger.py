@@ -185,6 +185,7 @@ try:
                 uniqueDict[comb_read] = {}
                 uniqueDict[comb_read]['read1'] = read1.seq.tostring()
                 uniqueDict[comb_read]['read2'] = read4.seq.tostring()
+                uniqueDict[comb_read]['primer_id'] = primer_id
                 uniqueDict[comb_read]['bc_counts'] = Counter()
                 uniqueDict[comb_read]['bc_counts'][combined_bc] += 1
                 uniqueCounter += 1
