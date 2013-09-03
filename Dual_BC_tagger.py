@@ -7,7 +7,7 @@ from Bio import SeqIO
 import sys
 import gzip
 import time
-import re
+#import re
 from collections import Counter
 
 barcodeMaxDiff = 1
@@ -22,14 +22,14 @@ primerReverse = "MetaData/Reverse.fasta"
 #R3_File ='Amplicon_Raw_fastq/20130408DBCFluidigmHollyKelsie/20130408DBCFluidigmHollyKelsie_NoIndex_L001_R3_001.fastq.gz'
 #R4_File ='Amplicon_Raw_fastq/20130408DBCFluidigmHollyKelsie/20130408DBCFluidigmHollyKelsie_NoIndex_L001_R4_001.fastq.gz'
 
-R1_File ='Amplicon_Raw_fastq/test40k_R1_001.fastq.gz'
-R2_File ='Amplicon_Raw_fastq/test40k_R2_001.fastq.gz'
-R3_File ='Amplicon_Raw_fastq/test40k_R3_001.fastq.gz'
-R4_File ='Amplicon_Raw_fastq/test40k_R4_001.fastq.gz'
+R1_File = 'Amplicon_Raw_fastq/test40k_R1_001.fastq.gz'
+R2_File = 'Amplicon_Raw_fastq/test40k_R2_001.fastq.gz'
+R3_File = 'Amplicon_Raw_fastq/test40k_R3_001.fastq.gz'
+R4_File = 'Amplicon_Raw_fastq/test40k_R4_001.fastq.gz'
 
-Output_prefix ='TESTWhichmanKelsie'
-Output_report ='TESTWhichmanKelsie_report.txt'
-Output_unique ='TESTWhichmanKelsie_uniques.txt'
+Output_prefix = 'TESTWhichmanKelsie'
+Output_report = 'TESTWhichmanKelsie_report.txt'
+Output_unique = 'TESTWhichmanKelsie_uniques.txt'
 
 # ------- read in barcodes and make a dictionary for lookup ----------------
 barcodes = {}
@@ -62,13 +62,13 @@ for seq in SeqIO.parse(open(primerReverse, 'r'), 'fasta'):
 
 
 # ---------- input files -----------------------
-R1= SeqIO.parse(gzip.open(R1_File, 'rb'), 'fastq')
+R1 = SeqIO.parse(gzip.open(R1_File, 'rb'), 'fastq')
 R2 = SeqIO.parse(gzip.open(R2_File, 'rb'), 'fastq')
 R3 = SeqIO.parse(gzip.open(R3_File, 'rb'), 'fastq')
 R4 = SeqIO.parse(gzip.open(R4_File, 'rb'), 'fastq')
 
 # ------- setup output files ------------
-outf = {'identified':[gzip.open(Output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_R2.fastq.gz', 'wb')],'unidentified':[gzip.open(Output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
+outf = {'identified':[gzip.open(Output_prefix + '_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_R2.fastq.gz', 'wb')], 'unidentified':[gzip.open(Output_prefix + '_Unidentified_R1.fastq.gz', 'wb'), gzip.open(Output_prefix + '_Unidentified_R2.fastq.gz', 'wb')]}
 
 barcodesFile = open(Output_report, 'w')
 uniquesFile = open(Output_unique, 'w')
@@ -139,8 +139,10 @@ try:
         if "%s %s" % (bc1, bc2) in barcodes:
             combined_bc = barcodes["%s %s" % (bc1, bc2)]
             counters[combined_bc][0] += 1
-            if bc1Mismatch: counters[combined_bc][1] += 1
-            if bc2Mismatch: counters[combined_bc][2] += 1
+            if bc1Mismatch:
+                counters[combined_bc][1] += 1
+            if bc2Mismatch:
+                counters[combined_bc][2] += 1
 
 
         ### Primer Matching ###
@@ -166,44 +168,35 @@ try:
 
         ### Output Reads ###
         if combined_bc is not None and primer_id is not None:
-            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s" % (read1.id.split()[0],read2.seq.tostring(),read3.seq.tostring(),combined_bc,primer_id,primer1Mismatch,primer2Mismatch)
-            read1.description=""
+            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s" % (read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer_id, primer1Mismatch, primer2Mismatch)
+            read1.description = ""
             SeqIO.write(read1, outf['identified'][0], "fastq")
-            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s" % (read4.id.split()[0],read2.seq.tostring(),read3.seq.tostring(),combined_bc,primer_id,primer1Mismatch,primer2Mismatch)
-            read4.description=""
+            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s" % (read4.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer_id, primer1Mismatch, primer2Mismatch)
+            read4.description = ""
             SeqIO.write(read4, outf['identified'][1], "fastq")
             txt = '\t'.join([read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer_id, str(primer1Mismatch), str(primer2Mismatch)]) + '\n'
             barcodesFile.write(txt)
             goodReadsCounter += 1
             comb_read = read1 + read4
-            comb_read = "".join([comb_read.seq.tostring(),primer_id])
+            comb_read = "".join([comb_read.seq.tostring(), primer_id])
             if (comb_read in uniqueDict):
                 uniqueDict[comb_read]['bc_counts'][combined_bc] += 1
             else:
                 uniqueDict[comb_read] = {}
                 uniqueDict[comb_read]['read1'] = read1.seq.tostring()
                 uniqueDict[comb_read]['read2'] = read4.seq.tostring()
-                uniqueDict[comb_read]['bc_counts'] = counter()
+                uniqueDict[comb_read]['bc_counts'] = Counter()
                 uniqueDict[comb_read]['bc_counts'][combined_bc] += 1
                 uniqueCounter += 1
 
         else:
-            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s|%s" % (read1.id.split()[0],read2.seq.tostring(),read3.seq.tostring(),combined_bc,primer1,primer1Mismatch,primer2,primer2Mismatch)
-            read1.description=""
+            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s|%s" % (read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer1, primer1Mismatch, primer2, primer2Mismatch)
+            read1.description = ""
             SeqIO.write(read1, outf['unidentified'][0], "fastq")
-            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s|%s" % (read4.id.split()[0],read2.seq.tostring(),read3.seq.tostring(),combined_bc,primer1,primer1Mismatch,primer2,primer2Mismatch)
-            read4.description=""
+            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s|%s" % (read4.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer1, primer1Mismatch, primer2, primer2Mismatch)
+            read4.description = ""
             SeqIO.write(read4, outf['unidentified'][1], "fastq")
             otherCounter += 1
-
-
-emptyBCdict = {}
-emptyBCdict['read1'] = None
-emptyBCdict['read2'] = None
-emptyBCdict['primer_id'] = None
-for bc in barcodes:
-    emptyBCdict[barcodes[bc]] = 0
-
 
 
         ### Report every 100K ###
@@ -235,13 +228,13 @@ finally:
     print"-------------------"
     txt = '\t'.join(["read1" ,"read2" ,"primer_id"])
     for bc in IDS:
-        txt = '\t'.join([txt,bc])
+        txt = '\t'.join([txt, bc])
     txt = txt  + '\n'
     uniquesFile.write(txt)
     for k in uniqueDict:
         txt = '\t'.join([uniqueDict[k]['read1'], uniqueDict[k]['read2'], uniqueDict[k]['primer_id']])
         for bc in IDS:
-            txt = '\t'.join([txt,str(uniqueDict[k][bc])])
+            txt = '\t'.join([txt, str(uniqueDict[k]['bc_counts'][bc])])
         txt = txt  + '\n'
         uniquesFile.write(txt)
     for k in outf:
