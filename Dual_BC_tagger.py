@@ -241,6 +241,5 @@ finally:
     for k in outf:
         outf[k][0].close()
         outf[k][1].close()
-    print uniqueDict
     barcodesFile.close()
     uniquesFile.close()
