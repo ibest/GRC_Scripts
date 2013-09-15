@@ -146,7 +146,7 @@ try:
 
         ### Primer Matching ###
         primer1 = None
-        primer1Mismatch = 10
+        primer1Mismatch = 4
         for primer in primersP5.keys():
             pmismatches = primerDist(read1.seq.tostring(), primer)
             if pmismatches < primer1Mismatch:
@@ -157,7 +157,7 @@ try:
 
 
         primer2 = None
-        primer2Mismatch = 10
+        primer2Mismatch = 4
         for primer in primersP7.keys():
             pmismatches = primerDist(read4.seq.tostring(), primer)
             if pmismatches < primer2Mismatch:
