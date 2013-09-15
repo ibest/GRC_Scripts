@@ -14,22 +14,22 @@ barcodeMaxDiff = 1
 primerMaxDiff = 4
 
 barcodeFile = "MetaData/barcodeLookupTable.txt"
-primerForward = "MetaData/Forward.fasta"
-primerReverse = "MetaData/Reverse.fasta"
+primerForward = "MetaData/fwd_primer.fasta"
+primerReverse = "MetaData/rev_primer.fasta"
 
-R1_File ='Amplicon_Raw_fastq/20130408DBCFluidigmHollyKelsie/20130408DBCFluidigmHollyKelsie_NoIndex_L001_R1_001.fastq.gz'
-R2_File ='Amplicon_Raw_fastq/20130408DBCFluidigmHollyKelsie/20130408DBCFluidigmHollyKelsie_NoIndex_L001_R2_001.fastq.gz'
-R3_File ='Amplicon_Raw_fastq/20130408DBCFluidigmHollyKelsie/20130408DBCFluidigmHollyKelsie_NoIndex_L001_R3_001.fastq.gz'
-R4_File ='Amplicon_Raw_fastq/20130408DBCFluidigmHollyKelsie/20130408DBCFluidigmHollyKelsie_NoIndex_L001_R4_001.fastq.gz'
+R1_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L001_R1_001.fastq.gz'
+R2_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L001_R2_001.fastq.gz'
+R3_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L001_R3_001.fastq.gz'
+R4_File ='Amplicon_Raw_fastq/20130910DBCAmpliconWesleyForney/AllReads_NoIndex_L001_R4_001.fastq.gz'
 
 #R1_File = 'Amplicon_Raw_fastq/test40k_R1_001.fastq.gz'
 #R2_File = 'Amplicon_Raw_fastq/test40k_R2_001.fastq.gz'
 #R3_File = 'Amplicon_Raw_fastq/test40k_R3_001.fastq.gz'
 #R4_File = 'Amplicon_Raw_fastq/test40k_R4_001.fastq.gz'
 
-Output_prefix = 'Fluidigm_WhichmanKelsie'
-Output_report = 'Fluidigm_WhichmanKelsie_report.txt'
-Output_unique = 'Fluidigm_yWhichmanKelsie_uniques.txt'
+Output_prefix = 'DBCWesleyForney'
+Output_report = 'DBCWesleyForney_report.txt'
+Output_unique = 'DBCWesleyForney_uniques.txt'
 
 # ------- read in barcodes and make a dictionary for lookup ----------------
 barcodes = {}

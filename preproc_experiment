@@ -28,7 +28,7 @@ option_list <- list(
   make_option(c("-s", "--skip-duduplicates"), action="store_false", default=FALSE,
               help="do not perform the deduplication step [default %default] NOT FUNCTIONAL YET",
               dest="skip_dedup"),
-  make_option(c("-c", "--contaminiants-folder"), type="character", default=NULL,
+  make_option(c("-c", "--contaminants-folder"), type="character", default=NULL,
               help="folder name with contaminant sequences in fasta format [default %default]",
               dest="contaminants"),
   make_option(c("-v", "--vector-folder"), type="character", default=NULL,
