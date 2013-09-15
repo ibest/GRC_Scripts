@@ -167,7 +167,7 @@ try:
             read4 = read4[len(primer2):]
 
         primer_id = None
-        if primersP5[primer1] == primersP7[primer2] and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
+        if primer1 != None and primer2 != None and primersP5[primer1] == primersP7[primer2] and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
             primer_id = primersP5[primer1]
 
         ### Output Reads ###
