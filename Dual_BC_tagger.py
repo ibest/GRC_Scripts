@@ -154,10 +154,11 @@ try:
                 primer1Mismatch = pmismatches
         if (primer1 != None):
             read1 = read1[len(primer1):]
+            primer1 = primersP5[primer1]
 
 
         primer2 = None
-        primer2Mismatch = 4
+        primer2Mismatch = 10
         for primer in primersP7.keys():
             pmismatches = primerDist(read4.seq.tostring(), primer)
             if pmismatches < primer2Mismatch:
@@ -165,9 +166,10 @@ try:
                 primer2Mismatch = pmismatches
         if (primer2 != None):
             read4 = read4[len(primer2):]
+            primer2 = primersP7[primer2]
 
         primer_id = None
-        if primer1 != None and primer2 != None and primersP5[primer1] == primersP7[primer2] and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
+        if primer1 == primer2 and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
             primer_id = primersP5[primer1]
 
         ### Output Reads ###
@@ -195,10 +197,10 @@ try:
                 uniqueCounter += 1
 
         else:
-            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s|%s" % (read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primersP5[primer1], primer1Mismatch, primersP7[primer2], primer2Mismatch)
+            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s|%s" % (read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer1, primer1Mismatch, primer2, primer2Mismatch)
             read1.description = ""
             SeqIO.write(read1, outf['unidentified'][0], "fastq")
-            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s|%s" % (read4.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primersP5[primer1], primer1Mismatch, primersP7[primer2], primer2Mismatch)
+            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s|%s" % (read4.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer1, primer1Mismatch, primer2, primer2Mismatch)
             read4.description = ""
             SeqIO.write(read4, outf['unidentified'][1], "fastq")
             otherCounter += 1
