@@ -100,10 +100,7 @@ def barcodeDist(b_1, b_2):
 def primerDist(read, primer):
     'counts mismatches between primer and sequence'
     read = read[0:(len(primer)-1)]
-    if primer == read:
-        return 0
-    else:
-        return sum(map(lambda x: x[0] != x[1], zip(read, primer) )) # python is bad-ass
+    return sum(map(lambda x: x[0] != x[1], zip(read, primer) )) # python is bad-ass
 
 # ------- work horse function ---------------
 try:
@@ -147,7 +144,7 @@ try:
 
         ### Primer Matching ###
         primer1 = None
-        primer1Mismatch = 100
+        primer1Mismatch = 4
         for primer in primersP5.keys():
             pmismatches = primerDist(read1.seq.tostring(), primer)
             if pmismatches < primer1Mismatch:
@@ -156,7 +153,7 @@ try:
                 read1 = read1[len(primer):]
 
         primer2 = None
-        primer2Mismatch = 100
+        primer2Mismatch =4
         for primer in primersP7.keys():
             pmismatches = primerDist(read4.seq.tostring(), primer)
             if pmismatches < primer2Mismatch:
