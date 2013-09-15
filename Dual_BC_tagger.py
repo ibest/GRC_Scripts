@@ -152,7 +152,8 @@ try:
             if pmismatches < primer1Mismatch:
                 primer1 = primer
                 primer1Mismatch = pmismatches
-        read1 = read1[len(primer1):]
+        if (primer1 != None):
+            read1 = read1[len(primer1):]
 
 
         primer2 = None
@@ -162,7 +163,8 @@ try:
             if pmismatches < primer2Mismatch:
                 primer2 = primer
                 primer2Mismatch = pmismatches
-        read4 = read4[len(primer2):]
+        if (primer2 != None):
+            read4 = read4[len(primer2):]
 
         primer_id = None
         if primersP5[primer1] == primersP7[primer2] and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
