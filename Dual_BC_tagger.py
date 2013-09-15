@@ -170,7 +170,7 @@ try:
 
         primer_id = None
         if primer1 == primer2 and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
-            primer_id = primersP5[primer1]
+            primer_id = primer1
 
         ### Output Reads ###
         if combined_bc is not None and primer_id is not None:
