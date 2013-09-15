@@ -150,9 +150,9 @@ try:
         for primer in primersP5.keys():
             pmismatches = primerDist(read1.seq.tostring(), primer)
             if pmismatches < primer1Mismatch:
-                primer1 = primersP5[primer]
+                primer1 = primer
                 primer1Mismatch = pmismatches
-                read1 = read1[len(primer):]
+        read1 = read1[len(primer1):]
 
 
         primer2 = None
@@ -160,14 +160,13 @@ try:
         for primer in primersP7.keys():
             pmismatches = primerDist(read4.seq.tostring(), primer)
             if pmismatches < primer2Mismatch:
-                primer2 = primersP7[primer]
+                primer2 = primer
                 primer2Mismatch = pmismatches
-                read4 = read4[len(primer):]
-            print "%s\t%s\t%s\t%s\t%s\t%s" % (read4.id, read4.seq.tostring(), primersP7[primer], primer, str(pmismatches), str(primer2Mismatch))
+        read4 = read4[len(primer2):]
 
         primer_id = None
-        if primer1 == primer2 and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
-            primer_id = primer1
+        if primersP5[primer1] == primersP7[primer2] and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
+            primer_id = primersP5[primer1]
 
         ### Output Reads ###
         if combined_bc is not None and primer_id is not None:
