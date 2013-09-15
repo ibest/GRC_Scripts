@@ -118,7 +118,8 @@ try:
             bc1 = read2.seq.tostring()
         else:
             for key in P7:
-                if barcodeDist(key, read2.seq.tostring()) <= barcodeMaxDiff:
+                bcdist = barcodeDist(key, read2.seq.tostring())
+                if bcdist <= barcodeMaxDiff:
                     bc1 = key
                     bc1Mismatch = True
 
@@ -128,7 +129,8 @@ try:
             bc2 = read3.seq.tostring()
         else:
             for key in P5:
-                if barcodeDist(key, read3.seq.tostring()) <= barcodeMaxDiff:
+                bcdist = barcodeDist(key, read3.seq.tostring())
+                if bcdist <= barcodeMaxDiff:
                     bc2 = key
                     bc2Mismatch = True
 
@@ -144,7 +146,7 @@ try:
 
         ### Primer Matching ###
         primer1 = None
-        primer1Mismatch = 4
+        primer1Mismatch = 10
         for primer in primersP5.keys():
             pmismatches = primerDist(read1.seq.tostring(), primer)
             if pmismatches < primer1Mismatch:
@@ -153,7 +155,7 @@ try:
                 read1 = read1[len(primer):]
 
         primer2 = None
-        primer2Mismatch =4
+        primer2Mismatch = 10
         for primer in primersP7.keys():
             pmismatches = primerDist(read4.seq.tostring(), primer)
             if pmismatches < primer2Mismatch:
