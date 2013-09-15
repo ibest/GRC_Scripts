@@ -147,6 +147,7 @@ try:
 
         ### Primer Matching ###
         primer1 = None
+        primer1Mismatch = None
         for primer in primersP5.keys():
             pmismatches = primerDist(read1.seq.tostring(), primer)
             if pmismatches < primerMaxDiff:
@@ -155,6 +156,7 @@ try:
                 read1 = read1[len(primer):]
 
         primer2 = None
+        primer2Mismatch = None
         for primer in primersP7.keys():
             pmismatches = primerDist(read4.seq.tostring(), primer)
             if pmismatches < primerMaxDiff:
