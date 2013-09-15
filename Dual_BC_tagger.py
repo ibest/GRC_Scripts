@@ -153,7 +153,7 @@ try:
                 primer1 = primersP5[primer]
                 primer1Mismatch = pmismatches
                 read1 = read1[len(primer):]
-            print "%s\t%s\t%s" % (read1.id.tostring(), primersP5[primer], str(primer1Mismatch))
+            print "%s\t%s\t%s" % (read1.id, primersP5[primer], str(primer1Mismatch))
 
 
         primer2 = None
