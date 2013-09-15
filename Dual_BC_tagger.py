@@ -195,10 +195,10 @@ try:
                 uniqueCounter += 1
 
         else:
-            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s|%s" % (read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer1, primer1Mismatch, primer2, primer2Mismatch)
+            read1.id = read1.name =  "%s 1:N:0:%s-%s|%s|%s|%s|%s|%s" % (read1.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primersP5[primer1], primer1Mismatch, primersP7[primer2], primer2Mismatch)
             read1.description = ""
             SeqIO.write(read1, outf['unidentified'][0], "fastq")
-            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s|%s" % (read4.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primer1, primer1Mismatch, primer2, primer2Mismatch)
+            read4.id = read4.name =  "%s 2:N:0:%s-%s|%s|%s|%s|%s|%s" % (read4.id.split()[0], read2.seq.tostring(), read3.seq.tostring(), combined_bc, primersP5[primer1], primer1Mismatch, primersP7[primer2], primer2Mismatch)
             read4.description = ""
             SeqIO.write(read4, outf['unidentified'][1], "fastq")
             otherCounter += 1
