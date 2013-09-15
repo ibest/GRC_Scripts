@@ -163,7 +163,7 @@ try:
                 primer2 = primersP7[primer]
                 primer2Mismatch = pmismatches
                 read4 = read4[len(primer):]
-            print "%s\t%s\t%s" % (read4.id, primersP7[primer], str(primer2Mismatch))
+            print "%s\t%s\t%s\t%s" % (read4.id, primersP7[primer], str(pmismatches), str(primer2Mismatch))
 
         primer_id = None
         if primer1 == primer2 and primer1Mismatch <= primerMaxDiff and primer2Mismatch <= primerMaxDiff:
