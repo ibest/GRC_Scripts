@@ -61,7 +61,7 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
-	paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, ">>", file.path(d,"preprocessing_output.txt"),sep="")
+	paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
 }
 
 link_illumina <- function(se1,se2,r1,r2,o){
@@ -105,7 +105,9 @@ get_phiX <- function(){
   return(phix)
 }
 
-
+qual <- opt$qual
+minL <- 120
+overlap <- opt$overlap
 process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap){
   write(paste(sample,":Processing folder ",folder,sep=""),stdout())
   if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
@@ -114,7 +116,8 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
     write(paste(sample,":\tde-duplicating reads",sep=""),stdout())
-    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
+
+#    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
@@ -130,6 +133,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     Read2 <- paste(output,"_PE2.fastq",sep="")
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\tjoining reads",sep=""),stdout())
+
     system(join_reads(Read1, Read2,output,overlap=overlap,file.path(Clean_Folder,sample)))
 
     ## link the final files to another folder
