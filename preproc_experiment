@@ -117,7 +117,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
     write(paste(sample,":\tde-duplicating reads",sep=""),stdout())
 
-#    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
+    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
