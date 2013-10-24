@@ -75,63 +75,58 @@ def writeread(ID, r1, r2):
 
 i = 0
 PE_written = 0
-SE_written = 0
-unwritten = 0
 for line in insam:
-    ## Check to see if it is a header line, if so skip and move on
-    if line[0] == "@":
-        continue
-    ## not a header line, so increment reads seen
-    line2 = line.strip().split()
-    if len(line2) > 2:
-        flag = int(line2[1])
-    else:
-        sys.exit("Something wrong with line %s, does not contain at least 2 columns" % i+1)
-    ## check for single end unmapped read
-    #logic:  !(0x1) = multiple segments in sequencing,   0x4 = segment unmapped,
-    # which means (is single, and this segment is unmapped)
-    if flag & 0x1 == 0 and flag & 0x4 != 0:
-        ID = line2[0].split("#")[0]
-        outSE.write("@" + ID + '\n')
-        outSE.write(line2[9] + '\n')
-        outSE.write('+\n' + line2[10] + '\n')
-        SE_written += 1
-    ## check for both paired end unmapped read
-    #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped
-    # which means (is paired, and this segment is unmapped and the next segment is unmapped)
-    elif flag & 0x1 != 0 and flag & 0x4 != 0 and flag & 0x8 != 0:
-        if flag & 0x40 != 0:  # is this PE1 (first segment in template)
-            #PE1 read, check that PE2 is in dict and write out
-            ID = line2[0].split("#")[0]
-            r1 = [line2[9], line2[10]]
-            if ID in PE2:
-                writeread(ID, r1, PE2[ID])
-                del PE2[ID]
-                PE_written += 1
-            else:
-                PE1[ID] = r1
-        elif flag & 0x80 != 0:  # is this PE2 (last segment in template)
-            #PE2 read, check that PE1 is in dict and write out
-            ID = line2[0].split("#")[0]
-            r2 = [line2[9], line2[10]]
-            if ID in PE1:
-                writeread(ID, PE1[ID], r2)
-                del PE1[ID]
-                PE_written += 1
-            else:
-                PE2[ID] = r2
-    else:
-        unwritten += 1
     i += 1
     if i % 100000 == 0:
         print "Record %s" % i
-        print "\t Unwritten: %s" % unwritten
-        print "\t Written: PE:%s SE:%s" % (PE_written,SE_written)
+        print "\t Unwritten: PE1 reads ", len(PE1), "PE2 reads: ", len(PE2)
+        print "\t Written: %s" % PE_written
+    line2 = line.strip().split()
+    if line[0] != "@" and len(line2) > 2:
+        flag = int(line2[1])
+    if line[0] != "@":
+        #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped
+        # which means (is paired, and this segment is unmapped and the next segment is unmapped)
+        if (flag & 0x1 != 0 and flag & 0x4 != 0 and flag & 0x8 != 0):
+            #if line2[0][-3:] == '0/1':
+            if flag & 0x40 != 0:  # is this PE1 (first segment in template)
+                #PE1 read, check that PE2 is in dict and write out
+                ID = line2[0].split("#")[0]
+                r1 = [line2[9], line2[10]]
+                if ID in PE2:
+                    writeread(ID, r1, PE2[ID])
+                    del PE2[ID]
+                    PE_written += 1
+                else:
+                    PE1[ID] = r1
+            elif flag & 0x80 != 0:  # is this PE2 (last segment in template)
+                #PE2 read, check that PE1 is in dict and write out
+                ID = line2[0].split("#")[0]
+                r2 = [line2[9], line2[10]]
+                if ID in PE1:
+                    writeread(ID, PE1[ID], r2)
+                    del PE1[ID]
+                    PE_written += 1
+                else:
+                    PE2[ID] = r2
+        elif flag & 0x4 != 0:  # unapped SE reads have a flag value of 4 (third bit set)
+            outSE.write("@" + line2[0] + '\n')
+            outSE.write(line2[9] + '\n')
+            outSE.write('+\n' + line2[10] + '\n')
 
 ## Finally go through PE1 and PE2, write out any SE reads that might exist:
-print "Checking for unmatched, paired reads"
+print "Checking for unmatched, paired reads and writing as SE"
 print "PE1 reads: ", len(PE1)
 print "PE2 reads: ", len(PE2)
+
+for k in PE1.keys():
+    outSE.write("@" + k + '#_1\n')
+    outSE.write(PE1[k][0] + '\n')
+    outSE.write('+\n' + PE1[k][1] + '\n')
+for k in PE2.keys():
+    outSE.write("@" + k + '#_2\n')
+    outSE.write(PE2[k][0] + '\n')
+    outSE.write('+\n' + PE2[k][1] + '\n')
 
 outPE1.close()
 outPE2.close()
