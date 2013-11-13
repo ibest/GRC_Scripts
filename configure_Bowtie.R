@@ -250,12 +250,15 @@ write.table(targetTables,file.path(opt$bowtieFolder,"SummarySample2Targets.txt")
 ## extract unmapped reads
 if (opt$extract_unmapped){## Extract Unmapped Reads
   dir.create(file.path(opt$screenFolder))
-  mclapply(bowtie, function(index){
+  extract_out <- mclapply(bowtie, function(index){
     try({
         dir.create(file.path(opt$screenFolder,index$sampleFolder));
-        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
+        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "),intern=TRUE);
         #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
     })
   },mc.cores=procs)
+  extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
+  extract_table <- data.frame(ID=names(bowtie),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
+  write.table(extract_table,file.path(opt$screenFolder,"SummaryExtracted.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
 }
 
