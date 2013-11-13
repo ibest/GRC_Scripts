@@ -243,7 +243,7 @@ targetTables <- data.frame(targetTables)
 colnames(targetTables) <- sapply(targets,"[[",1L)
 
 ### simple assign by most on target
-targetTables <- data.frame(targetTables,assign=colnames(targetTables)[apply(targetTables,1,which.max)])
+targetTables <- data.frame(ID=rownames(targetTables),targetTables,assign=colnames(targetTables)[apply(targetTables,1,which.max)])
 write.table(targetTables,file.path(opt$bowtieFolder,"SummarySample2Targets.txt"),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
 
 #####################################################
@@ -256,9 +256,27 @@ if (opt$extract_unmapped){## Extract Unmapped Reads
         system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "),intern=TRUE);
         #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
     })
-  },mc.cores=procs)
+  },mc.cores=procs/2)
   extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
   extract_table <- data.frame(ID=names(bowtie),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
   write.table(extract_table,file.path(opt$screenFolder,"SummaryExtracted.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
 }
 
+######################################################
+## generate VCF files
+
+#java -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar  -T HaplotypeCaller -R ../../03-targets/A.inornata/A.inornata_combined.fasta -I CP1.A.inornata.bam -o CP1.A.inornata.vcf
+
+gtk <- "java -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar"
+if (opt$generate_vcf){## Extract Unmapped Reads
+  vcf_out <- mclapply(bowtie, function(index){
+    try({
+      system(paste(gtk,
+                 "-T HaplotypeCaller",
+                 "-R",paste(index$target_path,"fasta",sep="."),
+                 "-I",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
+                 "-o",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"vcf",sep=".")),
+                 ">",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"gtk","out",sep=".")),sep=" "));    
+    })
+  },mc.cores=procs)
+}
