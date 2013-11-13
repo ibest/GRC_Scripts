@@ -187,7 +187,7 @@ bowtie <- bowtieList(samples,opt$readFolder,opt$samplesColumn,targets)
 ## create output folder
 dir.create(opt$bowtieFolder,showWarnings=FALSE,recursive=TRUE)
 ## run bowtie2
-mclapply(bowtie, function(index){
+bowtie_out <- mclapply(bowtie, function(index){
   dir.create(file.path(opt$bowtieFolder,index$sampleFolder))
   try({
     system(paste("bowtie2",
@@ -207,8 +207,9 @@ mclapply(bowtie, function(index){
         "| samtools view -bS - >", file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
   })
 },mc.cores=floor(procs/opt$bprocs))
+
 ## run samtools
-mclapply(bowtie, function(index){
+samtools_out <- mclapply(bowtie, function(index){
   dir.create(file.path(opt$bowtieFolder,index$sampleFolder))
   try({
     system(paste("samtools sort",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep="."))));
@@ -221,7 +222,7 @@ mclapply(bowtie, function(index){
 #####################################################
 ## write out index tables
 targetTables <- sapply(targets,function(tgt){
-  filesToRead <- unlist(sapply(file.path(opt$bowtieFolder,unique(samples[,column])),dir,pattern=paste(tgt[1],"idxstats",sep="."),full.names=TRUE))
+  filesToRead <- unlist(sapply(file.path(opt$bowtieFolder,unique(samples[,opt$samplesColumn])),dir,pattern=paste(tgt[1],"idxstats",sep="."),full.names=TRUE))
   info <- read.table(filesToRead[1])[,1:2]
   colnames(info) <- c("SequenceID","SequenceLength")
   data <- sapply(filesToRead,function(file){
@@ -234,15 +235,15 @@ targetTables <- sapply(targets,function(tgt){
   write.table(cbind(info,data),file.path(opt$bowtieFolder,paste(tgt[1],"summary","reads","txt",sep=".")),row.names=FALSE,col.names=TRUE,quote=FALSE,sep="\t")
   write.table(cbind(info,freq),file.path(opt$bowtieFolder,paste(tgt[1],"summary","proportions","txt",sep=".")),row.names=FALSE,col.names=TRUE,quote=FALSE,sep="\t")
   pmapped <- 100-tail(freq,1)
-  as.vector(pmapped)
+#  as.vector(pmapped)
   names(pmapped) <- colnames(freq)
-  pmapped
+  round(pmapped,3)
 })
 targetTables <- data.frame(targetTables)
 colnames(targetTables) <- sapply(targets,"[[",1L)
 
 ### simple assign by most on target
-targetTables$assign <- colnames(targetTables)[apply(targetTables,1,which.max)]
+targetTables <- data.frame(targetTables,assign=colnames(targetTables)[apply(targetTables,1,which.max)])
 write.table(targetTables,file.path(opt$bowtieFolder,"SummarySample2Targets.txt"),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
 
 #####################################################
@@ -252,8 +253,9 @@ if (opt$extract_unmapped){## Extract Unmapped Reads
   mclapply(bowtie, function(index){
     try({
         dir.create(file.path(opt$screenFolder,index$sampleFolder));
-        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py -u -v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
-      })
-  },mc.cores=opt$procs)
+        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
+        #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
+    })
+  },mc.cores=procs)
 }
 
