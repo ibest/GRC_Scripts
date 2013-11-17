@@ -265,18 +265,18 @@ if (opt$extract_unmapped){## Extract Unmapped Reads
 ######################################################
 ## generate VCF files
 
-#java -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar  -T HaplotypeCaller -R ../../03-targets/A.inornata/A.inornata_combined.fasta -I CP1.A.inornata.bam -o CP1.A.inornata.vcf
-
-gtk <- "java -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar"
-if (opt$generate_vcf){## Extract Unmapped Reads
-  vcf_out <- mclapply(bowtie, function(index){
-    try({
-      system(paste(gtk,
-                 "-T HaplotypeCaller",
-                 "-R",paste(index$target_path,"fasta",sep="."),
-                 "-I",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
-                 "-o",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"vcf",sep=".")),
-                 ">",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"gtk","out",sep=".")),sep=" "));    
-    })
-  },mc.cores=procs)
-}
+#java -Xmx6g -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar  -T HaplotypeCaller -R ../../03-targets/A.inornata/A.inornata_combined.fasta -I CP1.A.inornata.bam -o CP1.A.inornata.vcf
+# 
+# gtk <- "java -Xmx6g -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar"
+# if (opt$generate_vcf){## Extract Unmapped Reads
+#   vcf_out <- mclapply(bowtie, function(index){
+#     try({
+#       system(paste(gtk,
+#                  "-T HaplotypeCaller",
+#                  "-R",paste(index$target_path,"fasta",sep="."),
+#                  "-I",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
+#                  "-o",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"vcf",sep=".")),
+#                  ">",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"gtk","out",sep=".")),sep=" "));    
+#     })
+#   },mc.cores=procs)
+# }
