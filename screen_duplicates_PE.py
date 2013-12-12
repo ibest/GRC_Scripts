@@ -109,6 +109,12 @@ for f in files:
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "R2".join(f.split("R1"))))
         main(infile1, infile2, outfile1, outfile2)
+    elif "_1.fastq" in f:
+        print f
+        infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
+        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_2.fastq".join(f.split("_1.fastq"))))
+        main(infile1, infile2, outfile1, outfile2)
+
 outfile1.close()
 outfile2.close()
 
