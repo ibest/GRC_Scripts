@@ -104,10 +104,10 @@ outfile2 = gzip.open(output_dir + "_nodup_PE2.fastq.gz", 'wb')
 files = listdir_nohidden('./' + sample_dir)
     
 for f in files:
-    if "R1" in f:
+    if "_R1" in f:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
-        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "R2".join(f.split("R1"))))
+        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_R2".join(f.split("_R1"))))
         main(infile1, infile2, outfile1, outfile2)
     elif "_1.fastq" in f:
         print f
