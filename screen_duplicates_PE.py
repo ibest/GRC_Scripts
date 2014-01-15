@@ -35,7 +35,7 @@ output_dir = options.output_dir
 #glob.glob will list hidden files
 #this replaces that functionality when hidden files exist, like in my reads from Berkeley
 def listdir_nohidden(path):
-    for f in os.listdir(path):
+    for f in sorted(os.listdir(path), key=str.lower):
         if not f.startswith('.'):
             yield f
 
