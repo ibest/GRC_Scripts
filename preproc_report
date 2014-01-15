@@ -51,7 +51,7 @@ if ( !file.exists(opt$samplesFile) ) {
 
 ### opt$samplesFile$SEQUENCE_ID should be the folder name inside of Raw_Folder
 ### opt$samplesFile$SAMPLE_ID should be the sample name
-targets <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
+targets <- read.table(opt$samplesFile,sep="\t",header=T,as.is=T)
 
 ##########################################
 ## directory structure

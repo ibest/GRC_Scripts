@@ -46,8 +46,8 @@ suppressPackageStartupMessages(library("parallel"))
 ### FUNCTIONS
 ####################################################
 screen_duplicates <- function(r,o,d){
-#  paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
-  paste("screen_duplicates_PE_sra.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+  paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+#  paste("screen_duplicates_PE_sra.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
 seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
