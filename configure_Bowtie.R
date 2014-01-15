@@ -89,7 +89,7 @@ suppressPackageStartupMessages(library("parallel"))
       targets$type[i] <- paste(ext,sep="/")
     }
     else {
-      ext <- file_ext(grep("fastq|sff","02-Cleaned/S1006B/S1006B_merged_SE.fastq",value=TRUE))
+      ext <- file_ext(grep("fastq|sff",dir(file.path(reads_folder,targets[i,column])),value=TRUE))
       if (length(ext) == 0){
         write(paste(targets[i,column],"is not a fastq or sff file\n"), stderr())
         stop()
@@ -184,30 +184,30 @@ targets <- prepareTargets(opt$bowtieTarget)
 procs <- prepareCore(opt$procs)
 bowtie <- bowtieList(samples,opt$readFolder,opt$samplesColumn,targets)
 
-## create output folder
-dir.create(opt$bowtieFolder,showWarnings=FALSE,recursive=TRUE)
-## run bowtie2
-bowtie_out <- mclapply(bowtie, function(index){
-  dir.create(file.path(opt$bowtieFolder,index$sampleFolder))
-  try({
-    system(paste("bowtie2",
-        "-I 0 -X 1500",
-        "-p", opt$bprocs,
-        "--rg-id", index$sampleFolder,
-        "--rg", paste("SM",index$sampleFolder,sep=":"),         
-        "--rg", paste("PL","illumina",sep=":"),         
-        "--rg", paste("LB","whatever",sep=":"),         
-        "--rg", paste("PU","whatever",sep=":"),         
-        "-x", index$target_path,
-        "-1",paste(index$PE1,collapse=","),
-        "-2",paste(index$PE2,collapse=","),
-        "-U",paste(index$SE,collapse=","),
-        #"-S",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"sam",sep=".")),
-        "2>",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
-        "| samtools view -bS - >", file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
-  })
-},mc.cores=floor(procs/opt$bprocs))
-
+# ## create output folder
+# dir.create(opt$bowtieFolder,showWarnings=FALSE,recursive=TRUE)
+# ## run bowtie2
+# bowtie_out <- mclapply(bowtie, function(index){
+#   dir.create(file.path(opt$bowtieFolder,index$sampleFolder))
+#   try({
+#     system(paste("bowtie2",
+#         "-I 0 -X 1500",
+#         "-p", opt$bprocs,
+#         "--rg-id", index$sampleFolder,
+#         "--rg", paste("SM",index$sampleFolder,sep=":"),         
+#         "--rg", paste("PL","illumina",sep=":"),         
+#         "--rg", paste("LB","whatever",sep=":"),         
+#         "--rg", paste("PU","whatever",sep=":"),         
+#         "-x", index$target_path,
+#         "-1",paste(index$PE1,collapse=","),
+#         "-2",paste(index$PE2,collapse=","),
+#         "-U",paste(index$SE,collapse=","),
+#         #"-S",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"sam",sep=".")),
+#         "2>",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
+#         "| samtools view -bS - >", file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
+#   })
+# },mc.cores=floor(procs/opt$bprocs))
+# 
 ## run samtools
 samtools_out <- mclapply(bowtie, function(index){
   dir.create(file.path(opt$bowtieFolder,index$sampleFolder))
