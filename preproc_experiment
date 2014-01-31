@@ -33,7 +33,7 @@ option_list <- list(
               dest="contaminants"),
   make_option(c("-v", "--vector-folder"), type="character", default=NULL,
               help="folder name with vector sequences in fasta format [default %default]",
-              dest="vector")
+              dest="vector"),
   make_option(c("--i64"), action="store_true",default=FALSE,
               help="input read Q scores are offset by 64 [default %default]",
               dest="i64")
@@ -66,7 +66,7 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample, i64) {
   if(file.exists(file.path(folder,"vector.fa"))){
     vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean --ow -qual", q, q,i64, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
+	paste("seqyclean --ow -qual", q, q, i64, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
