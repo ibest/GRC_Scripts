@@ -25,7 +25,7 @@ option_list <- list(
   make_option(c("-p", "--processors"), type="integer", default=1,
               help="number of processors to use [default %default]",
               dest="procs"),
-  make_option(c("-s", "--skip-duduplicates"), action="store_false", default=FALSE,
+  make_option(c("-s", "--skip-duduplicates"), action="store_true", default=FALSE,
               help="do not perform the deduplication step [default %default] NOT FUNCTIONAL YET",
               dest="skip_dedup"),
   make_option(c("-c", "--contaminants-folder"), type="character", default=NULL,
@@ -34,6 +34,9 @@ option_list <- list(
   make_option(c("-v", "--vector-folder"), type="character", default=NULL,
               help="folder name with vector sequences in fasta format [default %default]",
               dest="vector")
+  make_option(c("--i64"), action="store_true",default=FALSE,
+              help="input read Q scores are offset by 64 [default %default]",
+              dest="i64")
 )
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults,
@@ -50,7 +53,12 @@ screen_duplicates <- function(r,o,d){
 #  paste("screen_duplicates_PE_sra.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
-seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
+seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample, i64) {
+  if (i64){
+   i64_param="-i64"
+  } else {
+   i64_param=""
+  }
   vc_param = ""
   if(file.exists(file.path(folder,"contaminants.fa"))){
     vc_param=paste(vc_param,"-c",file.path(getwd(),folder,"contaminants.fa"),sep=" ")
@@ -58,7 +66,7 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample) {
   if(file.exists(file.path(folder,"vector.fa"))){
     vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean --ow -qual", q, q, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
+	paste("seqyclean --ow -qual", q, q,i64, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
