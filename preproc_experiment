@@ -117,7 +117,7 @@ get_phiX <- function(){
 #qual <- opt$qual
 #minL <- 120
 #overlap <- opt$overlap
-process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap){
+process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap,i64){
   write(paste(sample,":Processing folder ",folder,sep=""),stdout())
   if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
@@ -134,7 +134,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\trunning seqyclean",sep=""),stdout())
 
-    seqyclean_cmd <- seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample)
+    seqyclean_cmd <- seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample, i64)
     system(seqyclean_cmd)
 
     ## third use flash to join overlapping paired-end reads
@@ -252,7 +252,7 @@ write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" 
 mclapply(seq.int(1,nrow(targets)), function(index){
   folder <- targets$SEQUENCE_ID[index]
   sample <- targets$SAMPLE_ID[index]
-  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$minL,opt$overlap)})
+  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$minL,opt$overlap, opt$i64)})
   write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
   try({system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))})
 },mc.cores=opt$procs)
