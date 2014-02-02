@@ -189,6 +189,10 @@ parse_newblerFiles <- function(file){
 
 newblertb <- sapply(newbler, function(newb){
   if (!newbler_out[[newb$sampleFolder]]){
+    require("Hmisc")
+    cfile <- t(data.frame(strsplit(grep("contig",readLines(file.path(opt$newblerFolder,newb$sampleFolder,"454ContigGraph.txt")),value=TRUE),"\t"),stringsAsFactors=F))
+    cfile <- data.frame("Contig"=cfile[,2],"Length"=as.numeric(cfile[,3]),"Cov"=as.numeric(cfile[,4]))
+    cov <- c(wtd.mean(cfile$Cov,cfile$Length),sqrt(wtd.var(cfile$Cov,cfile$Length)))    
     pfile <- parse_newblerFiles(file.path(opt$newblerFolder,newb$sampleFolder,"454NewblerMetrics.txt"))
     # run data
     areads <- as.numeric(c(pfile$runMetrics$totalNumberOfReads, unlist(strsplit(sub("%","",pfile$consensusResults$readStatus$numAlignedReads),split=" *, *"))))
@@ -207,12 +211,12 @@ newblertb <- sapply(newbler, function(newb){
                                  pfile$consensusResults$largeContigMetrics$largestContigSize,
                                  unlist(strsplit(sub("%","",pfile$consensusResults$largeContigMetrics$Q40PlusBases),split=" *, *"))))
     allcontigs <- as.numeric(c(pfile$consensusResults$allContigMetrics$numberOfContigs,pfile$consensusResults$allContigMetrics$numberOfBases))
-    ndata <- c(areads,abases,rstatus,passembled,largecontigs,allcontigs)
+    ndata <- c(areads,abases,rstatus,passembled,largecontigs,allcontigs,cov)
     names(ndata) <- c("totalNumberOfReads","numAlignedReads","numAlignedReadsPercent",
                       "totalNumberOfBases","numAlignedBases","numAlignedReadsBases",
                       "numberAssembled","numberPartial","numberSingleton","numberRepeat","numberOutlier","numberTooShart","assembledPercent",
                       "numLargeContigsAssembled","numLargeBasesAssembled","avgLargeContigSize","N50LargeContigSize","largestContigSize","numQ40PlusBases","Q40PlusBasesPercent",
-                      "numAllContigsAssembled","numAllBasesAssembled")
+                      "numAllContigsAssembled","numAllBasesAssembled","meanWeightedCov","sdWeightedCov")
     return(round(ndata,3))
   }
 })
