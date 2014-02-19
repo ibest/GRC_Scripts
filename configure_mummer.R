@@ -229,7 +229,7 @@ mummertb <- sapply(mummer, function(index)
       fa <- readDNAStringSet(index$filename)
       nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
       tb <- tb[match(nms,tb$QUERY),]
-      names(fa) <- paste(tb$REF,names(fa),sep=" ")
+      names(fa) <- paste(tb$REF,names(fa),sep="-")
       targets$combined= NULL
       if (all(sapply(targets,length) == 3)){
         keep <- as.logical(sapply(targets,"[[",3L)[match(tb$REF,sapply(targets,"[[",1L))])
