@@ -53,7 +53,7 @@ suppressPackageStartupMessages(library("Biostrings"))
 ##  column: sample sheet column to use that specified folders
 "loadSamplesFile" <- function(file, reads_folder,column){
   ## debug
-  file = opt$samplesFile; reads_folder = opt$readFolder; column = opt$samplesColumn
+#  file = opt$samplesFile; reads_folder = opt$readFolder; column = opt$samplesColumn
   ##
   if ( !file.exists(file) ) {
     write(paste("Sample file",file,"does not exist\n"), stderr())
