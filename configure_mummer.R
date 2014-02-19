@@ -195,6 +195,9 @@ parse_mummerFiles <- function(file){
   clines <- gsub("^> | Len = ","",clines)
   
   clines <- rep(clines,time=diff(c(cindex,length(lines)+1))-1)
+  if (length(clines) == 0){
+    return(NULL)
+  }
   rev <- grep("Reverse",clines)
   clines <- matrix(unlist(strsplit(sub(" Reverse","",clines),split=" ")),ncol=2,byrow=TRUE)
   lines <- lines[-cindex]
@@ -221,17 +224,19 @@ mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
 #    cat(index$sampleFolder,"\n")
     tb <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
-    write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
-    fa <- readDNAStringSet(index$filename)
-    nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
-    tb <- tb[match(nms,tb$QUERY),]
-    names(fa) <- paste(tb$REF,names(fa),sep=" ")
-    targets$combined= NULL
-    if (all(sapply(targets,length) == 3)){
-      keep <- as.logical(sapply(targets,"[[",3L)[match(tb$REF,sapply(targets,"[[",1L))])
-      keep[is.na(keep)] <- FALSE
-      fa <- fa[keep]
+    if (tb != NULL){
+      write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
+      fa <- readDNAStringSet(index$filename)
+      nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
+      tb <- tb[match(nms,tb$QUERY),]
+      names(fa) <- paste(tb$REF,names(fa),sep=" ")
+      targets$combined= NULL
+      if (all(sapply(targets,length) == 3)){
+        keep <- as.logical(sapply(targets,"[[",3L)[match(tb$REF,sapply(targets,"[[",1L))])
+        keep[is.na(keep)] <- FALSE
+        fa <- fa[keep]
+      }
+      writeXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))    
     }
-    writeXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))    
 })
 
