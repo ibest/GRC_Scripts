@@ -224,7 +224,7 @@ mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
 #    cat(index$sampleFolder,"\n")
     tb <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
-    if (tb != NULL){
+    if (length(tb) > 0){
       write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
       fa <- readDNAStringSet(index$filename)
       nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
