@@ -121,7 +121,7 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
 
 "prepareSingleTarget" <- function(targets,path){
   ## targets is a fasta file
-  if(file_ext(targets) %in% c("fasta","fa")){
+  if(file_ext(targets) %in% c("fasta","fa","fna")){
     if (!file.exists(targets)){
       write(paste("Targets file (",targets,") does not exist"))
       stop()
@@ -135,7 +135,7 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
       stop()
     }
     for( i in length(targets_list) ) {
-      if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa")){
+      if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
         if (!file.exists(targets_list[[i]][2])){
           write(paste("Targets file (",targets_list[[i]][2],") does not exist"))
           stop()
@@ -179,7 +179,7 @@ mummer_out <- mclapply(mummer, function(index){
                  "-L -F -b -mum",
                  index$target,
                  index$filename,
-                 ">", file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")),sep=" "));
+                 ">", file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")),sep=" "),ignore.stderr=TRUE);
   })
 },mc.cores=floor(procs))
 
@@ -203,8 +203,8 @@ parse_mummerFiles <- function(file){
   lines <- matrix(unlist(strsplit(lines,split=" +")),ncol=4,byrow=TRUE)
   lines[,1] <- sub(".","?",sapply(strsplit(lines[,1],split="|",fixed=T),"[[",1L),fixed=T)
   clines[,1] <- sub(".","?",clines[,1],fixed=T)
-  df <- data.frame(clines,orient,lines)
-  tb <- unlist(sapply(split(df,df$X1),function(x) lapply(split(x,f=x$orient),function(y) sapply(split(y,f=y$X1.1),function(z) sum(as.numeric(z[["X4"]]))/as.numeric(z[["X2"]][1])))))
+  df <- data.frame(clines,orient,lines,stringsAsFactors=FALSE)
+  tb <- unlist(lapply(split(df,df$X1),function(x) lapply(split(x,f=x$orient),function(y) sapply(split(y,f=y$X1.1),function(z) sum(as.numeric(z[["X4"]]))/as.numeric(z[["X2"]][1])))))
   tb <- data.frame(matrix(unlist(strsplit(names(tb),split=".",fixed=T)),ncol=3,byrow=T),tb)
   tb <- tb[order(tb[,1],-as.numeric(tb[,4])),]
   tb <- tb[!duplicated(tb[,1]),]
@@ -219,7 +219,7 @@ parse_mummerFiles <- function(file){
 
 mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
-    cat(index$sampleFolder,"\n")
+#    cat(index$sampleFolder,"\n")
     tb <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
     write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
     fa <- readDNAStringSet(index$filename)
