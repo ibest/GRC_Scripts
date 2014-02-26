@@ -49,9 +49,7 @@ suppressPackageStartupMessages(library("Biostrings"))
 ## then check to make sure sequence reads are available using the specified column
 ## Parameters
 ##  file: sample sheet filename
-##  reads_folder: path to folder containing reads
-##  column: sample sheet column to use that specified folders
-"loadSamplesFile" <- function(file, column){
+"loadSamplesFile" <- function(file){
   ## debug
 #  file = opt$samplesFile; reads_folder = opt$readFolder; column = opt$samplesColumn
   ##
@@ -87,7 +85,7 @@ suppressPackageStartupMessages(library("Biostrings"))
   return(opt_procs)
 }
 
-samples <- loadSamplesFile(opt$samplesFile,opt$samplesColumn)
+samples <- loadSamplesFile(opt$samplesFile)
 procs <- prepareCore(opt$procs)
 
 ## create output folder
@@ -142,7 +140,8 @@ mummerList <- function(samples,contig_folder, contig_file, isARC,targets, column
   write(paste("Setting up",length(mummer_list),"jobs",sep=" "),stdout())  
   return(mummer_list)
 }
-
+1
+if (opt$isARC) opt$contigFileName = "contigs.fasta"
 mummer <- mummerList(samples,opt$contigFolder,opt$contigFileName,opt$isARC,targets$combined, opt$samplesColumn)
 
 ## run mummer
