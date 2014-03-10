@@ -37,6 +37,9 @@ option_list <- list(
   make_option(c("-s", "--screenedFolder"), type="character", default="03-Screened",
               help="if extractUnmapped is TRUE, save resulting fastq to this folder [default %default]",
               dest="screenFolder")
+  make_option(c("-l", "--localmode"), action="store_true", default=FALSE
+              help="use local mode in bowtie2 [default %default]",
+              dest="localmode")
 )
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults,
@@ -192,6 +195,7 @@ bowtie_out <- mclapply(bowtie, function(index){
   try({
     system(paste("bowtie2",
         "-I 0 -X 1500",
+        ifelse(opt$localmode,"--very-sensitive-local",""),
         "-p", opt$bprocs,
         "--rg-id", index$sampleFolder,
         "--rg", paste("SM",index$sampleFolder,sep=":"),         
