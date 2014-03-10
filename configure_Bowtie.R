@@ -37,7 +37,7 @@ option_list <- list(
   make_option(c("-s", "--screenedFolder"), type="character", default="03-Screened",
               help="if extractUnmapped is TRUE, save resulting fastq to this folder [default %default]",
               dest="screenFolder"),
-  make_option(c("-l", "--localmode"), action="store_true", default=FALSE
+  make_option(c("-l", "--localmode"), action="store_true", default=FALSE,
               help="use local mode in bowtie2 [default %default]",
               dest="localmode")
 )
