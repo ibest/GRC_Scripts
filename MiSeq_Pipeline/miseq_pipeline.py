@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+#Last Modified March 19, 2014 -- Sam Hunter
+
 """
 A pipeline for processing MiSeq runs.
 Inputs:
