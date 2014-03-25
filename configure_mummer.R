@@ -98,7 +98,7 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
       write(paste("Targets file (",targets,") does not exist"))
       stop()
     }
-    targets_list <- list(c(sub(".fasta$|.fa$","",basename(targets)),targets))
+    targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),targets))
   } else if (file.exists(targets)){
     ### multiple targets
     targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
@@ -112,6 +112,9 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
           write(paste("Targets file (",targets_list[[i]][2],") does not exist"))
           stop()
         }
+      } else{
+        write(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"))
+        stop()        
       }
     }
   } else {
@@ -120,7 +123,10 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
   }
   write(paste("Found", length(targets_list), "targets to map against, copying to mummer folder",sep=" "),stdout()) 
   fas <- sapply(targets_list, function(x) {
-      fa <- readDNAStringSet(x[2]); names(fa) <- paste(x[1],names(fa),sep="|"); fa})
+      fa <- readDNAStringSet(x[2]);
+      names(fa) <- paste(x[1],names(fa),sep="*");
+      fa
+      })
   writeXStringSet(do.call("c",fas),file.path(path,"targets.fasta"))
   targets_list$combined=file.path(path,"targets.fasta")
   return(targets_list)
@@ -140,7 +146,7 @@ mummerList <- function(samples,contig_folder, contig_file, isARC,targets, column
   write(paste("Setting up",length(mummer_list),"jobs",sep=" "),stdout())  
   return(mummer_list)
 }
-1
+
 if (opt$isARC) opt$contigFileName = "contigs.fasta"
 mummer <- mummerList(samples,opt$contigFolder,opt$contigFileName,opt$isARC,targets$combined, opt$samplesColumn)
 
@@ -169,34 +175,64 @@ parse_mummerFiles <- function(file){
   
   clines <- rep(clines,time=diff(c(cindex,length(lines)+1))-1)
   if (length(clines) == 0){
-    return(NULL)
+    return(data.frame())
   }
   rev <- grep("Reverse",clines)
   clines <- matrix(unlist(strsplit(sub(" Reverse","",clines),split=" ")),ncol=2,byrow=TRUE)
+  colnames(clines) <- c("query_name","query_length")
   lines <- lines[-cindex]
   orient = rep("+",times=length(lines))
   orient[rev] = "-"
   lines <- matrix(unlist(strsplit(lines,split=" +")),ncol=4,byrow=TRUE)
-  lines[,1] <- sub(".","?",sapply(strsplit(lines[,1],split="|",fixed=T),"[[",1L),fixed=T)
+  colnames(lines) <- c("ref_name","pos_ref","pos_query","match_length")
+  target <- sub(".","?",sapply(strsplit(lines[,1],split="*",fixed=T),"[[",2L),fixed=T)  
+  lines[,1] <- sub(".","?",sapply(strsplit(lines[,1],split="*",fixed=T),"[[",1L),fixed=T)
   clines[,1] <- sub(".","?",clines[,1],fixed=T)
-  df <- data.frame(clines,orient,lines,stringsAsFactors=FALSE)
-  tb <- unlist(lapply(split(df,df$X1),function(x) lapply(split(x,f=x$orient),function(y) sapply(split(y,f=y$X1.1),function(z) sum(as.numeric(z[["X4"]]))/as.numeric(z[["X2"]][1])))))
+  clines_target <- sapply(strsplit(clines[,1],split="_:_"),"[[",2L)
+  
+  target_match <- target == clines_target
+  
+  df <- data.frame(clines,orient,lines,target,clines_target,stringsAsFactors=FALSE)
+  df2 <- df[target_match,]
+  
+  tb <- unlist(
+    lapply(split(df2,df2$ref_name),function(x) 
+      lapply(split(x,f=x$orient),function(y) 
+        sapply(split(y,f=y$query_name),function(z) 
+          sum(as.numeric(z[["match_length"]]))/as.numeric(z[["query_length"]][1]))
+        )
+      )
+    )
   tb <- data.frame(matrix(unlist(strsplit(names(tb),split=".",fixed=T)),ncol=3,byrow=T),tb)
-  tb <- tb[order(tb[,1],-as.numeric(tb[,4])),]
-  tb <- tb[!duplicated(tb[,1]),]
+  tb <- tb[order(tb[,3],-as.numeric(tb[,4])),]
+  tb <- tb[!duplicated(tb[,3]),]
   rownames(tb) <- NULL
-  colnames(tb) <- c("QUERY","ORIENTATION", "REF","QUERY COVERAGE")
+  colnames(tb) <- c("REF","ORIENTATION", "QUERY","QUERY COVERAGE")
   tb$"QUERY LENGTH" <- df[match(tb$QUERY,df[,1]),2]
+  ### Big dumb rule of 10%
+  tb <- tb[tb[["QUERY COVERAGE"]] >= 0.1,]
+  tb$BREAK = NA
+  df.tmp <- df2[match(paste(tb$QUERY,tb$ORIENTATION),paste(df2$query_name,df2$orient)),]
+  tb$BREAK[df.tmp$pos_ref == 1 & df.tmp$pos_query != 1] <- df.tmp$pos_query [df.tmp$pos_ref == 1 & df.tmp$pos_query != 1]
+
+  df <- df[(paste(df$query_name,df$orient) %in% paste(tb$QUERY,tb$ORIENTATION)),c(1:7)]
+  df$query_name <- sub("?",".",df$query_name,fixed=T)
+  df$ref_name <- sub("?",".",df$ref_name,fixed=T)
+
   tb$REF <- sub("?",".",tb$REF,fixed=T)
   tb$QUERY <- sub("?",".",tb$QUERY,fixed=T)
-  tb
+  list(tb=tb,df=df)
+  
 }
 
 
 mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
 #    cat(index$sampleFolder,"\n")
-    tb <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
+    mummer <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
+    df <- mummer$df
+    write.table(df,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
+    tb <- mummer$tb
     if (length(tb) > 0){
       write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
       fa <- readDNAStringSet(index$filename)
@@ -208,7 +244,19 @@ mummertb <- sapply(mummer, function(index)
         keep <- as.logical(sapply(targets,"[[",3L)[match(tb$REF,sapply(targets,"[[",1L))])
         keep[is.na(keep)] <- FALSE
         fa <- fa[keep]
+        tb <- tb[keep,]
       }
+      for (i in seq.int(1,length(fa))){
+        if (!is.na(tb[i,"BREAK"])){
+          fa2 <- subseq(fa[i],as.numeric(tb[i,"BREAK"]))
+          fa[i] <- subseq(fa[i],1, as.numeric(tb[i,"BREAK"])-1)
+          nms <- sapply(strsplit(names(fa[i]),split=" "),"[[",1L)
+          names(fa)[i] <- paste(nms,".1 SPLIT_CONTIG REGION 1",sep="")
+          names(fa2) <- paste(nms,".2 SPLIT_CONTIG REGION 2",sep="")
+          fa <- c(fa,fa2)
+        }
+      }
+      fa <- fa[order(names(fa))]
       writeXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))    
     }
 })
