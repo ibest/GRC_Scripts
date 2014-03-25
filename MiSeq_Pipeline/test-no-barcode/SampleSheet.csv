@@ -1,0 +1,21 @@
+[Header]
+IEMFileVersion,4
+Investigator Name,20140315_Kate_Bat_RAD
+Experiment Name,20140315_Kate_Bat_RAD
+Date,3/15/2014
+Workflow,GenerateFASTQ
+Application,FASTQ Only
+Assay,TruSeq LT
+Description,20140315_Kate
+Chemistry,Default
+
+[Reads]
+312
+312
+
+[Settings]
+ReverseComplement,0
+
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,Sample_Project,Description
+1,1BAT,a,a1,20140315_Kate_Bat_RAD,20140315_Kate_Bat_RAD

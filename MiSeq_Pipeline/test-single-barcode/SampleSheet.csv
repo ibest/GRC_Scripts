@@ -1,0 +1,27 @@
+[Header]
+IEMFileVersion,4
+Investigator Name,RachelMueller
+Project Name,07112012_RMcDNA_MiSeq2
+Experiment Name,07112012_RMcDNA_MiSeq2
+Date,7/11/2012
+Workflow,GenerateFASTQ
+Application,FASTQ Only
+Assay,TruSeq DNA/RNA
+Description,7xRiboMinusTruSeqlibraries
+Chemistry,Default
+
+[Reads]
+151
+151
+
+[Settings]
+
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,Sample_Project,index,I7_Index_ID,Description
+1,,2012.07.11,A01,,ATCACG,A001,
+1g,,2012.07.11,A02,,CGATGT,A002,
+4,,2012.07.11,A03,,TTAGGC,A003,
+4g,,2012.07.11,A04,,TGACCA,A004,
+10,,2012.07.11,A05,,ACAGTG,A005,
+10g,,2012.07.11,A06,,GCCAAT,A006,
+13,,2012.07.11,A07,,CAGATC,A007,

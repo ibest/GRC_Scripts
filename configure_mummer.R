@@ -215,7 +215,8 @@ parse_mummerFiles <- function(file){
   df.tmp <- df2[match(paste(tb$QUERY,tb$ORIENTATION),paste(df2$query_name,df2$orient)),]
   tb$BREAK[df.tmp$pos_ref == 1 & df.tmp$pos_query != 1] <- df.tmp$pos_query [df.tmp$pos_ref == 1 & df.tmp$pos_query != 1]
 
-  df <- df[(paste(df$query_name,df$orient) %in% paste(tb$QUERY,tb$ORIENTATION)),c(1:7)]
+  #df <- df[(paste(df$query_name,df$orient) %in% paste(tb$QUERY,tb$ORIENTATION)),c(1:7)]
+  df <- df[(paste(df$query_name) %in% paste(tb$QUERY)),c(1:7)]
   df$query_name <- sub("?",".",df$query_name,fixed=T)
   df$ref_name <- sub("?",".",df$ref_name,fixed=T)
 
@@ -229,10 +230,10 @@ parse_mummerFiles <- function(file){
 mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
 #    cat(index$sampleFolder,"\n")
-    mummer <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
-    df <- mummer$df
+    pmummer <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
+    df <- pmummer$df
     write.table(df,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
-    tb <- mummer$tb
+    tb <- pmummer$tb
     if (length(tb) > 0){
       write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
       fa <- readDNAStringSet(index$filename)

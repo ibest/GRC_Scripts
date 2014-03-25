@@ -1,0 +1,8 @@
+ID,Lane,SampleID,SampleRef,Index,Description,Control,Recipe,Operator,SampleProject
+000000000-A1GP2,1,1,A01,ATCACG,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
+000000000-A1GP2,1,1g,A02,CGATGT,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
+000000000-A1GP2,1,4,A03,TTAGGC,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
+000000000-A1GP2,1,4g,A04,TGACCA,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
+000000000-A1GP2,1,10,A05,ACAGTG,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
+000000000-A1GP2,1,10g,A06,GCCAAT,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
+000000000-A1GP2,1,13,A07,CAGATC,7xRiboMinusTruSeqlibraries,N,,technician,07112012_RMcDNA_MiSeq2
