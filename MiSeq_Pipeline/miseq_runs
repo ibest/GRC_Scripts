@@ -1,0 +1,112 @@
+#!/bin/bash
+#
+# This is the script that syncs the /data/miseq folder to the central storage
+#
+#
+
+#
+REPO=/data/miseq/data/
+#
+DIRECTORY=$(ls -Ft $REPO| grep /|head -n 1|cut -d'/' -f1)
+#DIRECTORY=$(ls -t $REPO|head -n 1)
+#
+CSTOR=/mnt/home/uirig/miseq
+POST=/mnt/home/uirig
+#CSTOR=/data/uirig_temp
+CASAVA=CASAVA
+DATA=data
+LOGS=/data/miseq/logs
+
+CHECKFILE=runfinished
+
+email="msettles@uidaho.edu,dnew@uidaho.edu,bcheldelin@uidaho.edu,boswald@uidaho.edu"
+#email="shunter@gmail.com"
+adminemail="boswald@uidaho.edu,shunter@gmail.com"
+
+echo "REPO = $REPO" > /tmp/miseq_variables.txt
+echo "DIRECTORY = $DIRECTORY" >> /tmp/miseq_variables.txt
+echo "CSTOR = $CSTOR" >> /tmp/miseq_variables.txt
+echo "CASAVA = $CASAVA" >> /tmp/miseq_variables.txt
+echo "DATA = $DATA" >> /tmp/miseq_variables.txt
+
+. /usr/modules/init/bash
+module load grc perl
+#
+
+if [ ! -d "$CSTOR"/"$CASAVA"/"$DIRECTORY" ] 
+then
+	/data/miseq/check_status.py $REPO$DIRECTORY > /tmp/miseq_check.txt
+	
+	echo "after the directory check"	
+	if [ -f $REPO/$DIRECTORY/$CHECKFILE ]
+	then
+       		#output=$(rsync -av --delete $REPO/$DIRECTORY $CSTOR)
+       		#chown -R uirig:uirigadm $CSTOR/$DIRECTORY
+   
+		/data/miseq/miseq_pipeline.py $REPO/$DIRECTORY $CSTOR/$CASAVA/$DIRECTORY > /tmp/miseq_pipe.txt
+		
+		echo "After the MISEQ PIPELINE"	
+		sh $CSTOR/$CASAVA/$DIRECTORY/setup_casava.sh > $CSTOR/$CASAVA/$DIRECTORY/miseq_setup.txt
+		echo "After the setup_casava"
+
+		cd $CSTOR/$CASAVA/$DIRECTORY/Split
+		
+		make -j 4 
+
+		#set folders to rwxrwxr_x and files  
+		chmod -R ug+rwX $CSTOR/$CASAVA/$DIRECTORY/
+ 
+		cd $REPO 
+
+		tar -cvpf $DIRECTORY.tar $DIRECTORY | xargs -I '{}' sh -c "test -f '{}' &&  md5sum '{}'" | tee $DIRECTORY.md5 > /tmp/miseq_tar_md5.txt
+		echo "#################################################" >> /tmp/miseq_tar_md5.txt
+		echo "#################################################" >> /tmp/miseq_tar_md5.txt
+		echo "#################################################" >> /tmp/miseq_tar_md5.txt
+		tar -df $DIRECTORY.tar $DIRECTORY > /tmp/miseq_tar.txt
+
+		if [ $? -ne 0 ]
+		then
+			problem="There was a problem with the tar"
+			echo "$problem"|mail -s "Miseq Problem" $adminemail
+			exit 1
+		fi
+		
+		gzip $DIRECTORY.tar
+		if [ $? -ne 0 ]
+		then
+			prob="There was a problem with the gzip"
+                        echo "prob"|mail -s "Miseq GZIP Problem" $adminemail
+                        exit 1	
+		fi
+
+
+#		rsync -a $DIRECORY.tar.gz $CSTOR/$DATA/
+#		if [ $? -ne 0 ]
+#		then
+#			prob="There was a problem with the rsync"
+#                        echo "prob"|mail -s "Miseq RSYNC Problem" $email,$adminemail
+#                        exit 1	
+#		fi
+
+#		rm -Rf $DIRECTORY
+	
+		scripts=`ls $POST/post_processing/run/*.sh`
+		for each in $scripts
+			do 
+			echo "In the Post Process" > /tmp/miseq_post.txt
+			$each $REPO $DIRECTORY $CSTOR $CASAVA $DATA $LOGS $CHECKFILE $email $adminemail >> /tmp/miseq_post.txt
+			rm -f $each >> /tmp/miseq_post.txt
+		done
+		
+		mkdir $LOGS/$DIRECTORY
+		mv /tmp/miseq_* $LOGS/$DIRECTORY
+
+		success="The MiSeq run $DIRECTORY has finished successfully"
+                echo "$success"|mail -s "Miseq Run Completion" $email,$adminemail
+	
+		exit 0
+	fi
+echo "After the first if"
+fi
+
+echo "at the end of the script"

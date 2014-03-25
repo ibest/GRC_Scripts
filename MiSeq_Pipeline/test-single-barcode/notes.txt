@@ -1,0 +1,99 @@
+SampleSheet.csv:
+	ID,Lane,SampleID,SampleRef,Index,Description,Control,Recipe,Operator,SampleProject
+	000000000-A1GP2,1,1,,ATCACG,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,1g,,CGATGT,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,4,,TTAGGC,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,4g,,TGACCA,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,10,,ACAGTG,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,10g,,GCCAAT,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,13,,CAGATC,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+
+
+#Run info
+runinfo = {}
+runinfo['Investigator_Name'] = ""
+runinfo['Project_Name'] = ""
+runinfo['Experiment_Name'] = ""
+runinfo['Date'] = ""
+runinfo['Workflow'] = ""
+runinfo['Application'] = ""
+runinfo['Assay'] = ""
+runinfo['Description'] = ""
+runinfo['Chemistry'] = ""
+
+/mnt/home/msettles/opt/CASAVA/bin/configureBclToFastq.pl --input-dir /data/miseq/data/120719_M00457_0027_A000000000-A1FGK/Data/Intensities/BaseCalls/ --output-dir ./Split --sample-sheet ./SampleSheet.csv
+
+--use-bases-mask Y160,Y160
+
+
+
+
+RunInfo.xml:
+	<?xml version="1.0"?>
+	<RunInfo xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="2">
+	  <Run Id="120711_M00457_0024_A000000000-A1GP2" Number="23">
+	    <Flowcell>000000000-A1GP2</Flowcell>
+	    <Instrument>M00457</Instrument>
+	    <Date>120711</Date>
+	    <Reads>
+	      <Read NumCycles="151" Number="1" IsIndexedRead="N" />
+	      <Read NumCycles="6" Number="2" IsIndexedRead="Y" />
+	      <Read NumCycles="151" Number="3" IsIndexedRead="N" />
+	    </Reads>
+	    <FlowcellLayout LaneCount="1" SurfaceCount="1" SwathCount="1" TileCount="12" />
+	  </Run>
+	</RunInfo>
+
+
+SampleSheet.csv:
+	[Header]
+	IEMFileVersion,4
+	Investigator Name,RachelMueller
+	Project Name,07112012_RMcDNA_MiSeq2
+	Experiment Name,07112012_RMcDNA_MiSeq2
+	Date,7/11/2012
+	Workflow,GenerateFASTQ
+	Application,FASTQ Only
+	Assay,TruSeq DNA/RNA
+	Description,7xRiboMinusTruSeqlibraries
+	Chemistry,Default
+
+	[Reads]
+	151
+	151
+
+	[Settings]
+
+	[Data]
+	Sample_ID,Sample_Name,Sample_Plate,Sample_Well,Sample_Project,index,I7_Index_ID,Description
+	1,,2012.07.11,A01,,ATCACG,A001,
+	1g,,2012.07.11,A02,,CGATGT,A002,
+	4,,2012.07.11,A03,,TTAGGC,A003,
+	4g,,2012.07.11,A04,,TGACCA,A004,
+	10,,2012.07.11,A05,,ACAGTG,A005,
+	10g,,2012.07.11,A06,,GCCAAT,A006,
+	13,,2012.07.11,A07,,CAGATC,A007,
+
+
+Outputs:
+SampleSheet.csv:
+	ID,Lane,SampleID,SampleRef,Index,Description,Control,Recipe,Operator,SampleProject
+	000000000-A1GP2,1,1,,ATCACG,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,1g,,CGATGT,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,4,,TTAGGC,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,4g,,TGACCA,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,10,,ACAGTG,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,10g,,GCCAAT,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+	000000000-A1GP2,1,13,,CAGATC,07092012_RMcDNA_MiSeq1,N,,Suresh,07112012_RMcDNA_MiSeq2
+
+	
+run_casava.sh:
+/mnt/home/msettles/opt/CASAVA/bin/configureBclToFastq.pl --input-dir /data/miseq/data/120719_M00457_0027_A000000000-A1FGK/Data/Intensities/BaseCalls/ --output-dir ./Split --sample-sheet ./SampleSheet.csv
+Options:  
+	--fastq-cluster-count (reads per file, default 4 million)
+	--input-dir
+	--output-dir
+	--use-bases-mask Y160,Y160  <---- might be unnecessary since it is in RunInfo.xml ? Yes, it appears that in a normal run which completed successfully, CASAVA can pull this information out.
+	--sample-sheet
+
+

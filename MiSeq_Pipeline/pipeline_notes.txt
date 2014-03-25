@@ -1,0 +1,140 @@
+2013-08-25:
+Postprocessing scripts can be added to: /mnt/home/uirig/post_processing/run/
+
+
+chmod ug+rwx 
+      ug+rw 
+
+
+Pipeline Overview:
+	-Data starts on: /data/miseq/data/
+	-Python script parses:
+		 /RUNID/RunInfo.xml  extract <Flowcell>000000000-A1FGK</Flowcell>
+		 /RUNID/SampleSheet.csv 
+
+
+
+
+1) When run finishes
+
+--check for files in runfolder/Data/Intensities/L001/CXXX.1 
+	where XXX.1 is the sum of the cycles in RunInfo.xml
+
+	TODO: write a little python script to test for this, have it create a "runfinished" file inside of the runfolder
+	the python script would accept the run folder as it's only input.
+
+2) call miseq_pipeline.py to generate necessary files (setup_casava.sh and SampleSheet.csv)
+
+3) set up CASAVA with setup_casava.sh
+
+4) run CASAVA (make -j 12)
+
+5) tar.gz original data (or maybe we can 7zip them and then test the archive to make sure the zip was successful ?)
+
+6) delete uncompressed data
+7) ---- make it easy to run some yet-to-be-determined pre-processing/QA report type stuff
+8) rsync CASAVA output and any additional processing results to central storage
+9) done.
+
+
+
+
+  
+Tar and generate md5 at the same time:
+#http://serverfault.com/questions/120582/creating-a-tar-file-with-checksums-included
+  tar -cvpf mybackup.tar myfiles/| xargs -I '{}' sh -c "test -f '{}' &&  md5sum '{}'" | tee mybackup.md5
+
+
+#Check tar against src
+tar df file.tar src
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Header]
+IEMFileVersion,4
+Investigator Name,Hohenlohe
+Project Name,2012.07.19
+Experiment Name,RADlike04-Hohenlohe
+Date,7/19/2012
+Workflow,GenerateFASTQ
+Application,FASTQ Only
+Assay,TruSeq DNA/RNA
+Description,TamaraLibrary04
+Chemistry,Default
+
+[Reads]
+160
+160
+
+[Settings]
+
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,Sample_Project,Description
+T04,,,,,
+~                                                                                                                                                                                                
+~         
+
+
+Pseudocode:
+
+
+
+
+
+
+Data is in:
+mnt/home/uirig/miseq/data/<RUN NAME>/mnt/home/uirig/miseq/data/
+Files are:
+
+s_G1_L001_I1_001.fastq.gz  
+s_G1_L001_I1_002.fastq.gz  
+s_G1_L001_R1_001.fastq.gz  
+s_G1_L001_R1_002.fastq.gz  
+s_G1_L001_R2_001.fastq.gz  
+s_G1_L001_R2_002.fastq.gz
+
+## Dealing with gzip
+#http://docs.python.org/library/gzip.html
+import gzip
+f = gzip.open('/home/joe/file.txt.gz', 'rb')
+file_content = f.read()
+f.close()
+
+
+
+##### The current barcodes include:
+ATCACGA     Kit Ind Ad #1
+CGATGTA     Kit Ind Ad #2
+TTAGGCA     Kit Ind Ad #3
+TGACCAA     Kit Ind Ad #4
+ACAGTGA     Kit Ind Ad #5
+GCCAATA     Kit Ind Ad #6
+CAGATCA     Kit Ind Ad #7
+ACTTGAA     Kit Ind Ad #8
+GATCAGA     Kit Ind Ad #9
+TAGCTTA     Kit Ins Ad #10
+GGCTACA     Kit Ind Ad #11
+CTTGTAA     Kit Ind Ad #12
+AGTCAACAA   TruS IndAd #13
+AGTTCCGTA   TruS IndAd #14
+ATGTCAGAA   TruS IndAd #15
+CCGTCCCGA   TruS IndAd #16
+GTCCGCACA   TruS IndAd #18
+GTGAAACGA   TruS IndAd #19
+GTGGCCTTA   TruS IndAd #20
+GTTTCGGAA   TruS IndAd #21
+CGTACGTAA   TruS IndAd #22
+GAGTGGATA   TruS IndAd #23
+ACTGATATA   TruS IndAd #25
+ATTCCTTTA   TruS IndAd #27

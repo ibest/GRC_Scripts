@@ -1,0 +1,1 @@
+/mnt/home/msettles/opt/CASAVA/bin/configureBclToFastq.pl --input-dir /bio/Core-Work/MiSeq_Pipeline/test --output-dir /bio/Core-Work/MiSeq_Pipeline/test/output/Split --sample-sheet /bio/Core-Work/MiSeq_Pipeline/test/output/SampleSheet.csv

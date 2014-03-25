@@ -1,0 +1,22 @@
+[Header]
+IEMFileVersion,4
+Investigator Name,20140117_MariyaAmy002
+Experiment Name,20140117_MariyaAmy002
+Date,1/17/2014
+Workflow,GenerateFASTQ
+Application,FASTQ Only
+Assay,TruSeq HT
+Description,20140117_MariyaAmy002
+Chemistry,Amplicon
+
+[Reads]
+301
+301
+
+[Settings]
+ReverseComplement,0
+
+[Data]
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
+MariyaAmy002,MariyaAmy002,,,D701,ATTACTCG,D501,TATAGCCT,MariyaAmy002,MariyaAmy002
+
