@@ -44,7 +44,7 @@ retmax = 1000
 restart = 0
 outSIO = cStringIO.StringIO()
 total_recs = 0
-lens = []
+lens = {}
 while restart < int(Count):
     rquery = utils + "/efetch.fcgi?rettype=" + report + "&retmode=text&retstart=%s" % restart
     rquery += "&retmax=%s" % retmax + '&db=' + db + '&query_key=' + QueryKey
@@ -70,6 +70,7 @@ while restart < int(Count):
         lens.append(len(record))
         SeqIO.write(record, outf, 'fasta')
         recs += 1
+        lens[record.id] = len(record)
     total_recs += recs
     restart = restart + retmax
     print "Processed %s records." % recs
@@ -80,5 +81,14 @@ while restart < int(Count):
 print "Finished processing all records."
 print "Expected record count: %s, actual record count: %s" % (Count, total_recs)
 print "Elapsed time=%s s" % (time.time() - startt)
-
 outf.close()
+
+#Write out stats
+outf = open("download_stats.csv", 'w')
+outf.write("seqid,length\n")
+for k in lens:
+    outf.write("%s,%s\n" % (k, lens[k]))
+outf.close()
+
+
+
