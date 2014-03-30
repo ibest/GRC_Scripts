@@ -67,7 +67,6 @@ while restart < int(Count):
     #And parse the cStringIO object with SeqIO
     recs = 0
     for record in SeqIO.parse(outSIO, 'fasta'):
-        lens.append(len(record))
         SeqIO.write(record, outf, 'fasta')
         recs += 1
         lens[record.id] = len(record)
