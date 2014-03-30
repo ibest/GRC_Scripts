@@ -58,7 +58,7 @@ while restart < int(Count):
         outSIO.write(urllib.urlopen(rquery).read())
         outSIO.seek(0)
     except Exception as exc:
-        print "Error on i=%s" % i
+        print "Error on i=%s" % restart
         print "Producing exception: \n\t" + str(exc)
         print "Retrying with restart=%s" % restart
         continue
