@@ -41,7 +41,6 @@ print "Count = ", Count, "QueryKey = ", QueryKey, "WebEnv = ", WebEnv
 #Set up for downloading actual data:
 outf = open(outfile, 'w')
 retmax = 1000
-temp_retmax = 0
 restart = 0
 total_recs = 0
 lens = {}
@@ -63,22 +62,19 @@ while restart < int(Count):
         print "Error on i=%s" % restart
         print "Producing exception: \n\t" + str(exc)
         print "Retrying with restart=%s" % restart
-        if temp_retmax != 0:
-            temp_retmax = int(temp_retmax/2)
-        else:
-            temp_retmax = int(retmax/2)
+        retmax = int(retmax/2)
         continue
 
     print "Query successful, parsing records."
     #And parse the cStringIO object with SeqIO
     recs = 0
-    temp_retmax = 0
+    retmax = 1000
     for record in SeqIO.parse(outSIO, 'fasta'):
         SeqIO.write(record, outf, 'fasta')
         recs += 1
         lens[record.id] = len(record)
     total_recs += recs
-    restart = restart + retmax
+    restart = restart + recs
     del outSIO
     print "Processed %s records." % recs
     print "Processed %s/%s total records at a rate of %s/S" % (total_recs, Count, (total_recs)/(time.time() - startt))
