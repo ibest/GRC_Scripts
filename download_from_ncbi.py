@@ -40,7 +40,7 @@ print "Count = ", Count, "QueryKey = ", QueryKey, "WebEnv = ", WebEnv
 
 #Set up for downloading actual data:
 outf = open(outfile, 'w')
-retmax = 1000
+retmax = 500
 restart = 0
 outSIO = cStringIO.StringIO()
 total_recs = 0
