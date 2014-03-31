@@ -56,10 +56,10 @@ while restart < int(Count):
         outSIO.write(urllib.urlopen(rquery).read())
         outSIO.seek(0)
     except Exception as exc:
-        print "Error on i=%s" % restart
-        print "Producing exception: \n\t" + str(exc)
-        print "Retrying with restart=%s" % restart
         retmax = int(retmax/2)
+        print "Error on restart=%s" % restart
+        print "Producing exception: \n\t" + str(exc)
+        print "Retrying with restart=%s, retmax=%s" % (restart, retmax)
         continue
 
     print "Query successful, parsing records."
