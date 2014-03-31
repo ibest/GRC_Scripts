@@ -46,10 +46,7 @@ total_recs = 0
 lens = {}
 while restart < int(Count):
     rquery = utils + "/efetch.fcgi?rettype=" + report + "&retmode=text&retstart=%s" % restart
-    if temp_retmax != 0:
-        rquery += "&retmax=%s" % retmax + '&db=' + db + '&query_key=' + QueryKey
-    else:
-        rquery += "&retmax=%s" % temp_retmax + '&db=' + db + '&query_key=' + QueryKey
+    rquery += "&retmax=%s" % retmax + '&db=' + db + '&query_key=' + QueryKey
     rquery += "&WebEnv=" + WebEnv
 
     print "Executing query:\n\t%s" % rquery
