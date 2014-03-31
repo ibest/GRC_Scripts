@@ -40,13 +40,17 @@ print "Count = ", Count, "QueryKey = ", QueryKey, "WebEnv = ", WebEnv
 
 #Set up for downloading actual data:
 outf = open(outfile, 'w')
-retmax = 500
+retmax = 1000
+temp_retmax = 0
 restart = 0
 total_recs = 0
 lens = {}
 while restart < int(Count):
     rquery = utils + "/efetch.fcgi?rettype=" + report + "&retmode=text&retstart=%s" % restart
-    rquery += "&retmax=%s" % retmax + '&db=' + db + '&query_key=' + QueryKey
+    if temp_retmax != 0:
+        rquery += "&retmax=%s" % retmax + '&db=' + db + '&query_key=' + QueryKey
+    else:
+        rquery += "&retmax=%s" % temp_retmax + '&db=' + db + '&query_key=' + QueryKey
     rquery += "&WebEnv=" + WebEnv
 
     print "Executing query:\n\t%s" % rquery
@@ -59,11 +63,16 @@ while restart < int(Count):
         print "Error on i=%s" % restart
         print "Producing exception: \n\t" + str(exc)
         print "Retrying with restart=%s" % restart
+        if temp_retmax != 0:
+            temp_retmax = int(temp_retmax/2)
+        else:
+            temp_retmax = int(retmax/2)
         continue
 
     print "Query successful, parsing records."
     #And parse the cStringIO object with SeqIO
     recs = 0
+    temp_retmax = 0
     for record in SeqIO.parse(outSIO, 'fasta'):
         SeqIO.write(record, outf, 'fasta')
         recs += 1
