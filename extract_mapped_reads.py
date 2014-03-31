@@ -73,6 +73,7 @@ else:
     insam = sys.stdin
 
 base = options.output_base
+strict = options.strict
 
 PE1 = {}
 PE2 = {}
