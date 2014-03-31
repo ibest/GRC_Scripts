@@ -42,8 +42,8 @@ print "Count = ", Count, "QueryKey = ", QueryKey, "WebEnv = ", WebEnv
 outf = open(outfile, 'w')
 retmax = 500
 restart = 0
-outSIO = cStringIO.StringIO()
 total_recs = 0
+outSIO = cStringIO.StringIO()
 lens = {}
 while restart < int(Count):
     rquery = utils + "/efetch.fcgi?rettype=" + report + "&retmode=text&retstart=%s" % restart
@@ -51,10 +51,9 @@ while restart < int(Count):
     rquery += "&WebEnv=" + WebEnv
 
     print "Executing query:\n\t%s" % rquery
-
     #stream the data into a cStringIO object
     try:
-        #result = urllib.urlopen(rquery).read()
+        outSIO.seek(0)  # must seek to 0 for next write
         outSIO.write(urllib.urlopen(rquery).read())
         outSIO.seek(0)
     except Exception as exc:
