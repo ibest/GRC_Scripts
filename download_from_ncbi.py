@@ -43,7 +43,6 @@ outf = open(outfile, 'w')
 retmax = 500
 restart = 0
 total_recs = 0
-outSIO = cStringIO.StringIO()
 lens = {}
 while restart < int(Count):
     rquery = utils + "/efetch.fcgi?rettype=" + report + "&retmode=text&retstart=%s" % restart
@@ -51,9 +50,9 @@ while restart < int(Count):
     rquery += "&WebEnv=" + WebEnv
 
     print "Executing query:\n\t%s" % rquery
+    outSIO = cStringIO.StringIO()
     #stream the data into a cStringIO object
     try:
-        outSIO.seek(0)  # must seek to 0 for next write
         outSIO.write(urllib.urlopen(rquery).read())
         outSIO.seek(0)
     except Exception as exc:
@@ -71,6 +70,7 @@ while restart < int(Count):
         lens[record.id] = len(record)
     total_recs += recs
     restart = restart + retmax
+    del outSIO
     print "Processed %s records." % recs
     print "Processed %s/%s total records at a rate of %s/S" % (total_recs, Count, (total_recs)/(time.time() - startt))
     if restart < int(Count):
