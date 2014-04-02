@@ -53,7 +53,7 @@ parser.add_option('-o', '--output_base', help="output file basename",
 parser.add_option('-v', '--verbose', help="verbose output",
                   action="store_false", dest="verbose", default=True)
 parser.add_option('-s', '--strict', help="strict, requires both pairs to be mapped",
-                  action="store_true", dest="strict", default=True)
+                  action="store_true", dest="strict", default=False)
 
 (options,  args) = parser.parse_args()  # uncomment this line for command line support
 
