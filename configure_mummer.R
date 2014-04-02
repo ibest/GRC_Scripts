@@ -188,12 +188,15 @@ parse_mummerFiles <- function(file){
   target <- sub(".","?",sapply(strsplit(lines[,1],split="*",fixed=T),"[[",2L),fixed=T)  
   lines[,1] <- sub(".","?",sapply(strsplit(lines[,1],split="*",fixed=T),"[[",1L),fixed=T)
   clines[,1] <- sub(".","?",clines[,1],fixed=T)
-  clines_target <- sapply(strsplit(clines[,1],split="_:_"),"[[",2L)
-  
-  target_match <- target == clines_target
-  
-  df <- data.frame(clines,orient,lines,target,clines_target,stringsAsFactors=FALSE)
-  df2 <- df[target_match,]
+
+  if (opt$isARC){
+    clines_target <- sapply(strsplit(clines[,1],split="_:_"),"[[",2L)
+    target_match <- target == clines_target
+    df <- data.frame(clines,orient,lines,target,clines_target,stringsAsFactors=FALSE)
+    df2 <- df[target_match,]
+  }else{
+    df <- df2 <- data.frame(clines,orient,lines,target,stringsAsFactors=FALSE)
+  }
   
   tb <- unlist(
     lapply(split(df2,df2$ref_name),function(x) 
@@ -208,13 +211,16 @@ parse_mummerFiles <- function(file){
   tb <- tb[!duplicated(tb[,3]),]
   rownames(tb) <- NULL
   colnames(tb) <- c("REF","ORIENTATION", "QUERY","QUERY COVERAGE")
+  tb$"QUERY COVERAGE" <- signif(tb$"QUERY COVERAGE",digits=3)
   tb$"QUERY LENGTH" <- df[match(tb$QUERY,df[,1]),2]
   ### Big dumb rule of 10%
   tb <- tb[tb[["QUERY COVERAGE"]] >= 0.1,]
   tb$BREAK = NA
   df.tmp <- df2[match(paste(tb$QUERY,tb$ORIENTATION),paste(df2$query_name,df2$orient)),]
+  tb$REF_POS = df.tmp$pos_ref
+  tb$QUERY_POS = df.tmp$pos_query
   tb$BREAK[df.tmp$pos_ref == 1 & df.tmp$pos_query != 1] <- df.tmp$pos_query [df.tmp$pos_ref == 1 & df.tmp$pos_query != 1]
-
+  
   #df <- df[(paste(df$query_name,df$orient) %in% paste(tb$QUERY,tb$ORIENTATION)),c(1:7)]
   df <- df[(paste(df$query_name) %in% paste(tb$QUERY)),c(1:7)]
   df$query_name <- sub("?",".",df$query_name,fixed=T)
