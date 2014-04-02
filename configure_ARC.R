@@ -41,7 +41,7 @@ write_out_arc_config <- function(reads,sample,output){
 }
 
 
-opt <- list(samplesFile="samples.txt",targetsFile="Ref_Sequences/target.txt",readsFolder="02-Cleaned",arcFolder="04-ARC")
+opt <- list(samplesFile="samples.txt",targetsFile="Ref_Sequences/ARC_targets.fasta",readsFolder="02-Cleaned",arcFolder="04-ARC")
 
 ### for Rosenblum Whitesands
 #opt <- list(samplesFile="S.undulatus_samples.txt",targetsFile="03-targets/S.undulatus/S.undulatus_combined.fasta",readsFolder="02-Cleaned",arcFolder="05-ARC-S.undulatus")
@@ -50,4 +50,17 @@ opt <- list(samplesFile="samples.txt",targetsFile="Ref_Sequences/target.txt",rea
 dir.create(opt$arcFolder)
 
 if(!file.exists(dir(pattern=opt$samplesFile,full.names=TRUE))) stop("Samples file does not exist")
- 
+
+samples <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
+if(!file.exists(opt$targetsFile)) stop("Targets file does not exist")
+
+zz <- file(file.path(opt$arcFolder,"ARC_config.txt"), "w")  # open an output file connection
+arc_header(file.path(getwd(),opt$targetsFile),zz)
+
+for (i in unique(samples$SAMPLE_ID)){
+  read2arc <- dir(file.path(getwd(),opt$readsFolder,i),pattern="fastq",full.names=TRUE)  
+  write_out_arc_config(read2arc,i,zz)         
+}
+
+close(zz)
+

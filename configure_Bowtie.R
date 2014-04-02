@@ -31,6 +31,9 @@ option_list <- list(
   make_option(c("-e", "--extractUnmapped"), action="store_true", default=FALSE,
               help="Extract unmapped reads from the resulting bam file [default %default]",
               dest="extract_unmapped"),
+  make_option(c("-e", "--extractMapped"), action="store_true", default=FALSE,
+              help="Extract Mapped reads from the resulting bam file [default %default]",
+              dest="extract_mapped"),
   make_option(c("-g", "--gzip_extracted"), action="store_true", default=FALSE,
               help="gzip extracted read fastq files [default %default]",
               dest="gzip_extracted"),
@@ -257,13 +260,29 @@ if (opt$extract_unmapped){## Extract Unmapped Reads
   extract_out <- mclapply(bowtie, function(index){
     try({
         dir.create(file.path(opt$screenFolder,index$sampleFolder));
-        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "),intern=TRUE);
-        #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"screened",sep=".")),sep=" "));
+        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "),intern=TRUE);
+        #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "));
     })
   },mc.cores=procs/2)
   extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
   extract_table <- data.frame(ID=names(bowtie),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
-  write.table(extract_table,file.path(opt$screenFolder,"SummaryExtracted.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
+  write.table(extract_table,file.path(opt$screenFolder,"SummaryUnmapped.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
+}
+
+#####################################################
+## extract unmapped reads
+if (opt$extract_mapped){## Extract Unmapped Reads
+  dir.create(file.path(opt$screenFolder))
+  extract_out <- mclapply(bowtie, function(index){
+    try({
+      dir.create(file.path(opt$screenFolder,index$sampleFolder));
+      system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_mapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"mapped",sep=".")),sep=" "),intern=TRUE);
+      #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_mapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"mapped",sep=".")),sep=" "));
+    })
+  },mc.cores=procs/2)
+  extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
+  extract_table <- data.frame(ID=names(bowtie),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
+  write.table(extract_table,file.path(opt$screenFolder,"SummaryMapped.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
 }
 
 ######################################################
