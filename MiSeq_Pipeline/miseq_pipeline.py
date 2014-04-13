@@ -147,6 +147,7 @@ print "Building SampleSheet.csv....."
 outfn = os.path.join(out_dir, "SampleSheet.csv")
 outf1 = open(outfn, 'w')
 outf1.write("ID,Lane,SampleID,SampleRef,Index,Description,Control,Recipe,Operator,SampleProject\n")
+
 for s in samples:
     ID = runinfo['Flowcell']
     Lane = str(1)
@@ -166,21 +167,18 @@ for s in samples:
         SampleID = s[0]
     # dual barcode samples are handled specially, we want 4 reads instead of a split set.
     if numfields == 10:
+        # Special case for dual barcode runs, ONLY output one generic sample and quit
+        # sometimes multiple samples are listed in the sample sheet, but we don't want to include these.
         #Index = s[5] + "-" + s[7]
         #Description = s[9]
+        print "Double barcode run, writing one generic entry and exiting."
         Index = ""
+        SampleID = "DoubleBarcodeRun_" + runinfo['Experiment_Name'].split('_')[0][2:]
         runinfo['reads'][2] = runinfo['reads'][2].replace("I", "Y")
         runinfo['reads'][3] = runinfo['reads'][3].replace("I", "Y")
-    # if numfields == 9:
-    #     #Index = s[5]
-    #     Index = s[fields_idx['']]
-    #     #Description = s[7]
-    # if numfields == 8:
-    #     Index = s[5]
-    #     #Description = s[7]
-    # if numfields == 6:
-    #     Index = s[3]
-    #     #Description = s[5]
+        txt = ",".join([ID, Lane, SampleID, SampleRef, Index, Description, "N", "", "tech", runinfo["Project_Name"]])
+        outf1.write(txt + '\n')
+        break
     txt = ",".join([ID, Lane, SampleID, SampleRef, Index, Description, "N", "", "tech", runinfo["Project_Name"]])
     outf1.write(txt + '\n')
 outf1.close()
