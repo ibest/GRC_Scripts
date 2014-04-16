@@ -118,11 +118,10 @@ for f in files:
     elif '_PE1.fastq' in f:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
-        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_PE1.fastq".join(f.split("_PE2.fastq"))))
+        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_PE2.fastq".join(f.split("_PE1.fastq"))))
         main(infile1, infile2, outfile1, outfile2)
     else:
-        print "ERROR cannot find fastq files"
-        sys.exit()
+        print "%s not recognized" % f
 
 outfile1.close()
 outfile2.close()

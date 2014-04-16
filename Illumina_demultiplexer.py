@@ -39,7 +39,7 @@ class fastqIter:
     def close(self):
         self.inf.close()
 
-
+"""
 def writePE(outf1, outf2, r1, r2):
     #read1
     outf1.write(r1['id'])
@@ -56,7 +56,7 @@ def writePE(outf1, outf2, r1, r2):
     outPE2.write("@" + ID + "#0/2" '\n')
     outPE2.write(r2[0] + '\n')
     outPE2.write('+\n' + r2[1] + '\n')
-
+"""
 
 
 #------------------- functions ------------------------------
@@ -222,10 +222,10 @@ try:
                     key = bc
                     counters[key][1] += 1
         if key is not None:
-            read1.description += " " + key
+            read1.description += key
             SeqIO.write(read1, outfiles[key][0], "fastq")
             if PE:
-                read2.description += " " + key
+                read2.description += key
                 SeqIO.write(read2, outfiles[key][1], "fastq")
         else:
             counters['undetermined'] += 1
