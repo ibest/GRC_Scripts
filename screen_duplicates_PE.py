@@ -11,8 +11,8 @@ import sys, os, os.path, time, gzip
 from collections import Counter
 
 ## Parse options and setup ##
-usage = "usage %prog -d [path to directory of raw reads] -o [path to output directory]"
-#usage = "usage %prog read1.fastq read2.fastq output_base"
+usage = "usage %prog -d [path to directory of raw reads] -o [output file prefix (path + name)]"
+usage += "\n\te.g. %prog read1.fastq read2.fastq ./out/output_base"
 parser = OptionParser(usage=usage)
 
 parser.add_option('-d', '--directory', help="Directory containing read files to de-duplicate",
@@ -24,12 +24,12 @@ parser.add_option('-o', '--output', help="Directory to output de-duplicated read
 
 (options, args) = parser.parse_args()
 
-if len(args) != 0:
-    parser.print_help()
-    sys.exit()
-
 sample_dir = options.sample_dir
 output_dir = options.output_dir
+
+if len(args) != 0 or sample_dir is None or output_dir is None:
+    parser.print_help()
+    sys.exit()
 
 
 #kindly provided by http://stackoverflow.com/questions/7099290/how-to-ignore-hidden-files-using-os-listdir-python
