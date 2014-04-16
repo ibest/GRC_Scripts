@@ -18,7 +18,7 @@ parser = OptionParser(usage=usage)
 parser.add_option('-d', '--directory', help="Directory containing read files to de-duplicate",
                     action="store", type="str", dest="sample_dir")
 
-parser.add_option('-o', '--output', help="Directory to output de-duplicated reads",
+parser.add_option('-o', '--output', help="Directory + prefix to output de-duplicated reads",
                     action="store", type="str", dest="output_dir")
 
 
