@@ -16,10 +16,10 @@ usage = "usage %prog -d [path to directory of raw reads] -o [path to output dire
 parser = OptionParser(usage=usage)
 
 parser.add_option('-d', '--directory', help="Directory containing read files to de-duplicate",
-    action="store", type="str", dest="sample_dir")
+                    action="store", type="str", dest="sample_dir")
 
 parser.add_option('-o', '--output', help="Directory to output de-duplicated reads",
-    action="store", type="str", dest="output_dir")
+                    action="store", type="str", dest="output_dir")
 
 
 (options, args) = parser.parse_args()
@@ -30,6 +30,7 @@ if len(args) != 0:
 
 sample_dir = options.sample_dir
 output_dir = options.output_dir
+
 
 #kindly provided by http://stackoverflow.com/questions/7099290/how-to-ignore-hidden-files-using-os-listdir-python
 #glob.glob will list hidden files
@@ -83,8 +84,8 @@ def main(infile1, infile2, outfile1, outfile2):
                 duplicates += 1
             i += 1
             if i % 100000 == 0:
-              print "Pairs:","| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i,2), "| reads/sec:", round(i/(time.time() - start),0)
-            
+                print "Pairs:", "| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i, 2), "| reads/sec:", round(i/(time.time() - start), 0)
+
     except StopIteration:
         pass
     finally:
@@ -100,9 +101,9 @@ start = time.time()
 
 outfile1 = gzip.open(output_dir + "_nodup_PE1.fastq.gz", 'wb')
 outfile2 = gzip.open(output_dir + "_nodup_PE2.fastq.gz", 'wb')
-    
+
 files = listdir_nohidden('./' + sample_dir)
-    
+
 for f in files:
     if "_R1" in f:
         print f
@@ -114,6 +115,14 @@ for f in files:
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_2.fastq".join(f.split("_1.fastq"))))
         main(infile1, infile2, outfile1, outfile2)
+    elif '_PE1.fastq' in f:
+        print f
+        infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
+        infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_PE1.fastq".join(f.split("_PE2.fastq"))))
+        main(infile1, infile2, outfile1, outfile2)
+    else:
+        print "ERROR cannot find fastq files"
+        sys.exit()
 
 outfile1.close()
 outfile2.close()
