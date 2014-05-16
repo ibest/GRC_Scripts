@@ -211,7 +211,7 @@ try:
         key = None
         k = idx1.seq.tostring()
         if dualbc:
-            k += '.' + idx2.seq.tostring()
+            k += idx2.seq.tostring()
 
         if k in outfiles:
             key = k
