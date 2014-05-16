@@ -41,7 +41,7 @@ write_out_arc_config <- function(reads,sample,output){
 }
 
 
-opt <- list(samplesFile="samples.txt",targetsFile="Ref_Sequences/ARC_targets.fasta",readsFolder="02-Cleaned",arcFolder="04-ARC")
+opt <- list(samplesFile="samples.txt",targetsFile="targets.txt",readsFolder="02-Cleaned",arcFolder="03-ARC")
 
 ### for Rosenblum Whitesands
 #opt <- list(samplesFile="S.undulatus_samples.txt",targetsFile="03-targets/S.undulatus/S.undulatus_combined.fasta",readsFolder="02-Cleaned",arcFolder="05-ARC-S.undulatus")
