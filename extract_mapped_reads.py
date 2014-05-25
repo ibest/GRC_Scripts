@@ -120,8 +120,8 @@ for line in insam:
             continue
         #Handle PE:
         #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped
-        if ((strict and (flag & 0x1) and not (flag & 0x4 ) and not (flag & 0x8))
-                or (not strict and (flag & 0x1) and (not (flag & 0x4 ) or not (flag & 0x8)))):
+        if ((strict and (flag & 0x1) and not (flag & 0x4) and not (flag & 0x8))
+                or (not strict and (flag & 0x1) and (not (flag & 0x4) or not (flag & 0x8)))):
             if (flag & 0x40):  # is this PE1 (first segment in template)
                 #PE1 read, check that PE2 is in dict and write out
                 ID = line2[0].split("#")[0]

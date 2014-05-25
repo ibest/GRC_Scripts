@@ -72,11 +72,11 @@ def strdist(s1, s2):
 #-------------------- Testing --------------------------------
 
 ## Testing stuff:
-sys.argv.append("targets.tsv")
-sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R1_001.fastq.gz")
-sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R4_001.fastq.gz")
-sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R2_001.fastq.gz")
-sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R3_001.fastq.gz")
+# sys.argv.append("targets.tsv")
+# sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R1_001.fastq.gz")
+# sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R4_001.fastq.gz")
+# sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R2_001.fastq.gz")
+# sys.argv.append("DoubleBarcodeRun_140407_NoIndex_L001_R3_001.fastq.gz")
 
 
 #----------- introductory stuff to check input-----------------
@@ -173,7 +173,7 @@ with open(targetsf, 'r') as inf:
             break
         l = l.strip().split("\t")
         if dualbc:
-            k = l[1] + '.' + l[2]
+            k = l[1] + l[2]
         else:
             k = l[1]
         targets[k] = l[0]
@@ -211,7 +211,7 @@ try:
         key = None
         k = idx1.seq.tostring()
         if dualbc:
-            k += '.' + idx2.seq.tostring()
+            k += idx2.seq.tostring()
 
         if k in outfiles:
             key = k

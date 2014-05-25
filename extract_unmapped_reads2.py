@@ -4,12 +4,8 @@
 Extract reads which aren't mapped from a SAM or SAM.gz file.
 Behavior for PE:
   -Write out PE only if both do not map (if either of the pair maps, neither is retained)
--The logic on the FLAG bit looks like this:
-  write if: (flag & 0x1 == 1) and (flag & 0x4 == 1) and (flag & 0x8 == 1)
 Behavior for SE:
   -Write out SE if they don't map
--The logic on the FLAG bit looks like this:
-write if (flag & 0x1 == 0) and (flag & 0x4 == 1)
 
 Iterate over a SAM or SAM.gz file. take everything where the 3rd and
 4th flag bit are set to 1 and write reads out to files.
@@ -60,7 +56,7 @@ if len(args) == 1:
     if not os.path.exists(infile):
         print "Error, can't find input file %s" % infile
         sys.exit()
-  
+
     if infile.split(".")[-1] == "gz":
         insam = gzip.open(infile, 'rb')
     else:
@@ -110,7 +106,7 @@ for line in insam:
         i += 1
         line2 = line.strip().split()
         flag = int(line2[1])
-    
+
         #Handle SE:
         # unapped SE reads have 0x1 set to 0, and 0x4 (third bit) set to 1
         if (flag & 0x1 == 0) and (flag & 0x4):
@@ -122,9 +118,7 @@ for line in insam:
             continue
 
         #Handle PE:
-        #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped
-        # which means (is paired, and this segment is unmapped and the next segment is unmapped)
-        #if ((flag & 0x1) == 1 and (flag & 0x4) != 0 and flag & 0x8 != 0):
+        #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped, 0x80 the last segment in the template
         if ((flag & 0x1) and (flag & 0x4) and (flag & 0x8)):
             if (flag & 0x40):  # is this PE1 (first segment in template)
                 #PE1 read, check that PE2 is in dict and write out
