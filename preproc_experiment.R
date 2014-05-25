@@ -85,9 +85,10 @@ link_illumina <- function(se1,se2,r1,r2,o){
         fq <- readFastq(c(se1,se2))
         writeFastq(fq,se)
 	}
-    output = paste("ln -sf",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";",sep=" ")
+  } else{
+    se = se1
   }
-  output <- paste(output,"ln -sf",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","ln -sf",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
+  output <- paste("ln -sf",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";","ln -sf",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","ln -sf",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
   output
 }
 
@@ -150,12 +151,11 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\tjoining reads",sep=""),stdout())
 
-    SE1 <- NA
+    SE1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),"SE.fastq",sep="_"))
     SE2 <- NA
     if (!noOverlap){
         system(join_reads(Read1, Read2,output,overlap=overlap,file.path(Clean_Folder,sample)))
         ## link the final files to another folder
-        SE1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),"SE.fastq",sep="_"))
         SE2 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,".extendedFrags.fastq",sep=""),sep="_"))
     
         Read1 <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,".notCombined_1.fastq",sep=""),sep="_"))
