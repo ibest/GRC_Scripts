@@ -35,7 +35,7 @@ report_fun <- function(d,f){
   seqyclean_data <- as.numeric( c(seqyclean_data[[1]][c(3,4,6,7)],seqyclean_data[[2]][c(3,4,6,7)],seqyclean_data[[3]][c(5,7)],seqyclean_data[[4]][c(5,7)],seqyclean_data[[5]][5],seqyclean_data[[6]][5]))
   #  names(seqyclean_data) <- c("Pairs_Kept","Kept_Percentage","Kept_Bases","Discarded_Kept","Discarded_Percentage","Discarded_Bases","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length")
 
-  flash_data = integer(0)
+  flash_data = rep(NA,4)
   if(length(oflash <- which(output=="[FLASH] Read combination statistics:")) != 0){
     flash_res <- output[(oflash+1):(oflash+4)]
     flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
