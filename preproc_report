@@ -73,7 +73,12 @@ for (index in seq_along(targets$SAMPLE_ID)){
 }
 report <- as.data.frame(report)
 
-colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage","Total_nReads","Total_nBases")
+if(ncol(report) == 26){
+    colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage","Total_nReads","Total_nBases")
+} else if(ncol(report) == 22) {
+    colnames(report) <- c("Reads","Duplicates","Forward","Reverse","Percent","Reads_Sec","Pairs_Kept","Kept_Percentage","Kept_Bases","Kept_Bases_Percentage","Discarded_Kept","Discarded_Percentage","Discarded_Bases","Discarded_Bases_Percentage","PE1_single_reads","PE1_single_bases","PE2_single_reads","PE2_single_bases","PE1_length","PE2_length","Total_nReads","Total_nBases")
+
+}
 rownames(report) <- targets$SAMPLE_ID
 write.table(report,file="preproc_experiment_report.txt",sep="\t",row.names=TRUE,col.names=TRUE,quote=F)
 
