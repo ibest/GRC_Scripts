@@ -80,11 +80,12 @@ link_illumina <- function(se1,se2,r1,r2,o){
   output = ""
   ## first merge the 2 SE files
   if (!is.na(se1) & !is.na(se2)){
-    se <- file.path(dirname(se1),"merged_SE_files.fastq")
-    if (!file.exists(se)){
-        fq <- readFastq(c(se1,se2))
-        writeFastq(fq,se)
-	}
+      se <- file.path(dirname(se1),"merged_SE_files.fastq")
+      system(paste("cat",se1,se2,">",se,sep=" "))
+#     if (!file.exists(se)){
+#         fq <- readFastq(c(se1,se2))
+#         writeFastq(fq,se)
+# 	}
   } else{
     se = se1
   }
