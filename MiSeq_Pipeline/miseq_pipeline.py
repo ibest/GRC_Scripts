@@ -92,11 +92,22 @@ for l in inf1:
     if l[0:10] == "<Flowcell>":
         runinfo['Flowcell'] = l[10: l.find("</Flowcell>")]
     if l[0:6] == "<Read ":
-        l = l.split("=")
-        NumCycles = l[1].split()[0].strip('"')
-        Number = int(l[2].split()[0].strip('"'))
-        Index = "Y" if l[3].split()[0].strip('"') == 'N' else 'I'
-        runinfo['reads'][Number] = Index+NumCycles
+        NumCycles = Number = Index = None
+        l = l.split()
+        for e in l:
+            if '=' in e:
+                e = e.split('=')
+                if e[0] == 'Number':
+                    Number = int(e[1].strip('"'))
+                if e[0] == 'NumCycles':
+                    NumCycles = e[1].strip('"')
+                if e[0] == 'IsIndexedRead':
+                    Index = 'Y' if e[1].strip('"') == 'N' else 'I'
+        if None not in (NumCycles, Number, Index):
+            runinfo['reads'][Number] = Index + NumCycles
+        else:
+            print "Error, necessary keys were not detected inf RunInfo.xml line:\n\t%s" % ' '.join(l)
+            sys.exit()
 
 inf1.close()
 
