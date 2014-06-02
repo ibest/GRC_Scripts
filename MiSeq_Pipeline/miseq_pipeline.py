@@ -50,6 +50,7 @@ if not os.path.exists(in_dir):
     sys.exit()
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
+    os.chmod(out_dir, 0775)
     if not os.path.exists(out_dir):
         print "Error, could create output directory: %s\nExiting...." % out_dir
         sys.exit()
@@ -193,6 +194,7 @@ for s in samples:
     txt = ",".join([ID, Lane, SampleID, SampleRef, Index, Description, "N", "", "tech", runinfo["Project_Name"]])
     outf1.write(txt + '\n')
 outf1.close()
+os.chmod(outfn, 0664)
 
 # Build run_casava.sh:
 print "Building run_casava.sh...."
@@ -207,6 +209,6 @@ txt += "\n"
 outf1.write(txt)
 # if I need to write read info (this is in the xml, and it appears that CASAVA grabs it but...)
 outf1.close()
-
+os.chmod(outfn, 0664)
 
 print "All processing complete, %s total samples found" % len(samples)
