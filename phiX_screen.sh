@@ -3,7 +3,7 @@
 # A POSIX variable
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
-# Initialize our own variables:
+# Initialize variables:
 threads=4
 pe1=NA
 pe2=NA
@@ -33,44 +33,38 @@ shift $((OPTIND-1))
 
 btargs=$@
 
-bt_command="bowtie2 -I 0 -X 1500 --very-sensitive-local -p $threads -x phiX.index -q "
-if [ $se = "-" ] ; then # expect paired end reads
-   if [[ ${pe1: -3} == ".gz" ]] ; then # set up named pipes
-      mkfifo pe1 pe2
-      declare -a prefix=("zcat $pe1 &> pe1 &" "zcat $pe2 &> pe2 &")
-      suffix=" -1 pe1 -2 pe2"
-   else
-      suffix=" -1 $pe1 -2 $pe2"
-   fi
+#check for the bowtie2 index files
+if [ -f /data/phiX/phiX.index ] ; then 
+   bowtie_index=/data/phiX/phiX.index
 else
-   if [[ ${se: -3} == ".gz" ]] ; then # set up named pipes
-      mkfifo se 
-      declare -a prefix=(" zcat $se > se &")
-      suffix=" -U se"
+   wget -O phiX.tmp.fasta "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&rettype=fasta&retmode=text&id=9626372"
+   if [ $? -eq 0 ] ; then
+     bowtie2-build phiX.tmp.fasta phiX.bowtie2_tmp_index
+     bowtie_index=phiX.bowtie2_tmp_index
    else
-      suffix=" -U $se"
+     echo "ERROR: No copy of phiX sequence available, and download from NCBI failed. Goodbye"
+     exit 1
    fi
 fi
-#if [[ -z "${prefix[0]}" ]]; then
-#   for cmd in "${prefix[@]}" ; do
-#      echo "$cmd"
-#      $cmd
-#   done
-#fi
-echo "${prefix[0]}"
-${prefix[0]}
-echo "${prefix[1]}"
-${prefix[1]}
+
+#build the command string
+bt_command="bowtie2 -I 0 -X 1500 --very-sensitive-local -p $threads -x $bowtie_index -q "
+if [ $se = "-" ] ; then # expect paired end reads
+      suffix=" -1 $pe1 -2 $pe2"
+else
+      suffix=" -U $se"
+fi
 
 source /usr/modules/init/bash
 module load bowtie2 grc
 
-echo "The command:"
-echo "$bt_command $suffix | samtools view -bS "
-$bt_command $suffix
-# | samtools view -bS 
+#echo "The command:"
+#echo "$bt_command $suffix | samtools view -bS "
+$bt_command $suffix | samtools view -bS - > btout.bam
 
-if [ -f pe1 ] ; then rm pe1; fi
-if [ -f pe2 ] ; then rm pe2; fi
 
+# clean up
+if [ -f phiX.bowtie2_tmp_index ] ; then rm phiX.tmp.fasta phiX.bowtie2_tmp_index.* phiX.bowtie2_tmp_index; fi
+
+exit 0
 
