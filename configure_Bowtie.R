@@ -129,14 +129,14 @@ suppressPackageStartupMessages(library("parallel"))
       write(paste("Preparing bowtie2 indexes for:",targets,"\n"),stdout())
       system(paste("bowtie2-build",targets,sub(".fasta$|.fa$","",targets)))      
     }
-    targets_list <- list(c(sub(".fasta$|.fa$","",basename(targets)),sub(".fasta$|.fa$","",targets)))
+    targets_list <- list(c(sub(".fasta$|.fa$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))
   } else if (file.exists(targets)){
     ### multiple targets
     targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
-    if (!all(sapply(targets_list,length) == 2)) {
-      write("Some targets are malformed, this script requires 2 columns (tab separated) per line\n",stderr())
-      stop()
-    }
+#    if (!all(sapply(targets_list,length) == 2)) {
+#      write("Some targets are malformed, this script requires 2 columns (tab separated) per line\n",stderr())
+#      stop()
+#    }
     for( i in length(targets_list) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa")){
         if (!file.exists(paste(sub(".fasta$|.fa$","",targets_list[[i]][2]),"1.bt2",sep="."))){
