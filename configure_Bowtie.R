@@ -120,14 +120,14 @@ suppressPackageStartupMessages(library("parallel"))
   if (file.exists(paste(targets,"1.bt2",sep="."))){
     ### single target, bowtie2 build exists
     targets_list <- list(c(basename(targets),targets))
-  } else if(file_ext(targets) %in% c("fasta","fa")){
+  } else if(file_ext(targets) %in% c("fasta","fa","fna")){
     ### single target, need to buld bowtie2 build
-    if (!file.exists(paste(sub(".fasta$|.fa$","",targets),"1.bt2",sep="."))){
+    if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"1.bt2",sep="."))){
       if (!file.exists(targets)){
         write(paste("Targets file (",targets,") does not exist"))
       }
       write(paste("Preparing bowtie2 indexes for:",targets,"\n"),stdout())
-      system(paste("bowtie2-build",targets,sub(".fasta$|.fa$","",targets)))      
+      system(paste("bowtie2-build",targets,sub(".fasta$|.fa$|.fna$","",targets)))      
     }
     targets_list <- list(c(sub(".fasta$|.fa$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))
   } else if (file.exists(targets)){
@@ -138,12 +138,12 @@ suppressPackageStartupMessages(library("parallel"))
 #      stop()
 #    }
     for( i in length(targets_list) ) {
-      if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa")){
-        if (!file.exists(paste(sub(".fasta$|.fa$","",targets_list[[i]][2]),"1.bt2",sep="."))){
+      if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
+        if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"1.bt2",sep="."))){
           write(paste("Preparing bowtie2 indexes for:",targets_list[[i]][2],"\n"),stdout())
-          system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$","",targets_list[[i]][2])))
+          system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])))
         }
-        targets_list[[i]][2] <- sub(".fasta$|.fa$","",targets_list[[i]][2])
+        targets_list[[i]][2] <- sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])
       }
     }
   } else {
