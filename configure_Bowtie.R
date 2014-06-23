@@ -139,7 +139,7 @@ suppressPackageStartupMessages(library("parallel"))
 #    }
     for( i in length(targets_list) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
-        if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"1.bt2",sep="."))){
+        if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"rev.2.bt2",sep="."))){
           write(paste("Preparing bowtie2 indexes for:",targets_list[[i]][2],"\n"),stdout())
           system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])))
         }
