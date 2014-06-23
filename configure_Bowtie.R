@@ -117,7 +117,7 @@ suppressPackageStartupMessages(library("parallel"))
 ## Parameters
 ##  targets: filename of bowtie2 build, fasta file or text file with multiple targets
 "prepareTargets" <- function(targets){
-  if (file.exists(paste(targets,"1.bt2",sep="."))){
+  if (file.exists(paste(targets,"rev.2.bt2",sep="."))){
     ### single target, bowtie2 build exists
     targets_list <- list(c(basename(targets),targets))
   } else if(file_ext(targets) %in% c("fasta","fa","fna")){
@@ -137,11 +137,11 @@ suppressPackageStartupMessages(library("parallel"))
 #      write("Some targets are malformed, this script requires 2 columns (tab separated) per line\n",stderr())
 #      stop()
 #    }
-    for( i in length(targets_list) ) {
+    for( i in seq.int(length(targets_list)) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
         if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"rev.2.bt2",sep="."))){
           write(paste("Preparing bowtie2 indexes for:",targets_list[[i]][2],"\n"),stdout())
-          system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])))
+          system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])),ignore.stdout = TRUE, ignore.stderr = TRUE)
         }
         targets_list[[i]][2] <- sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])
       }
