@@ -232,7 +232,9 @@ samtools_out <- mclapply(bowtie, function(index){
 #####################################################
 ## write out index tables
 targetTables <- sapply(targets,function(tgt){
-  filesToRead <- unlist(sapply(file.path(opt$bowtieFolder,unique(samples[,opt$samplesColumn])),dir,pattern=paste(tgt[1],"idxstats",sep="."),full.names=TRUE))
+  print(paste("Generating output for target:",tgt[1]))
+  filesToRead <- unlist(sapply(unique(samples[,opt$samplesColumn]),function(x) file.path(opt$bowtieFolder,x,paste(x,tgt[1],"idxstats",sep="."))))
+#  filesToRead <- unlist(sapply(file.path(opt$bowtieFolder,unique(samples[,opt$samplesColumn])),dir,pattern=paste(tgt[1],"idxstats",sep="."),full.names=TRUE))
   info <- read.table(filesToRead[1])[,1:2]
   colnames(info) <- c("SequenceID","SequenceLength")
   data <- sapply(filesToRead,function(file){
@@ -249,6 +251,7 @@ targetTables <- sapply(targets,function(tgt){
   names(pmapped) <- colnames(freq)
   round(pmapped,3)
 })
+
 targetTables <- data.frame(targetTables)
 colnames(targetTables) <- sapply(targets,"[[",1L)
 
