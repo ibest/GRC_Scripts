@@ -109,7 +109,7 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
     for( i in length(targets_list) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
         if (!file.exists(targets_list[[i]][2])){
-          write(paste("Targets file (",targets_list[[i]][2],") does not exist\n"),stderr())
+          write(paste("Targets file (",targets_list[[i]][2],") does not exist"),stderr()
           stop()
         }
       } else{
