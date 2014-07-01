@@ -54,7 +54,7 @@ suppressPackageStartupMessages(library("Biostrings"))
 #  file = opt$samplesFile; reads_folder = opt$readFolder; column = opt$samplesColumn
   ##
   if ( !file.exists(file) ) {
-    write(paste("Sample file",file,"does not exist\n"), stderr())
+    print(paste("Sample file",file,"does not exist\n"), stderr())
     stop()
   }  
   ### column SEQUENCE_ID should be the folder name inside of Raw_Folder
@@ -62,10 +62,10 @@ suppressPackageStartupMessages(library("Biostrings"))
   ### rows can be commented out with #
   targets <- read.table(file,sep="",header=TRUE,as.is=TRUE)
   if( !all(c("SAMPLE_ID","SEQUENCE_ID") %in% colnames(targets)) ){
-    write(paste("Expecting the two columns SAMPLE_ID and SEQUENCE_ID in samples file (tab-delimited)\n"), stderr())
+    print(paste("Expecting the two columns SAMPLE_ID and SEQUENCE_ID in samples file (tab-delimited)\n"), stderr())
     stop()
   }
-  write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())  
+  print(paste("samples sheet contains", nrow(targets), "samples to process",sep=" "),stdout())  
   return(targets)  
 }
 
@@ -81,7 +81,7 @@ suppressPackageStartupMessages(library("Biostrings"))
 "prepareCore" <- function(opt_procs){
   # if opt_procs set to 0 then expand to samples by targets
   if( opt_procs == 0 ) opt_procs <- detectCores()
-  write(paste("Using",opt_procs,"processors",sep=" "),stdout())
+  print(paste("Using",opt_procs,"processors",sep=" "),stdout())
   return(opt_procs)
 }
 
@@ -95,7 +95,7 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
   ## targets is a fasta file
   if(file_ext(targets) %in% c("fasta","fa","fna")){
     if (!file.exists(targets)){
-      write(paste("Targets file (",targets,") does not exist"))
+      print(paste("Targets file (",targets,") does not exist"))
       stop()
     }
     targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),targets))
@@ -103,31 +103,31 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
     ### multiple targets
     targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
     if (!all(sapply(targets_list,length) == 2) & !all(sapply(targets_list,length) == 3)) {
-      write("Some targets are malformed, this script requires 2 (optionally 3) columns (tab separated) per line\n",stderr())
+      print("Some targets are malformed, this script requires 2 (optionally 3) columns (tab separated) per line\n",stderr())
       stop()
     }
     for( i in length(targets_list) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
         if (!file.exists(targets_list[[i]][2])){
-          write(paste("Targets file (",targets_list[[i]][2],") does not exist"))
+          print(paste("Targets file (",targets_list[[i]][2],") does not exist"))
           stop()
         }
       } else{
-        write(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"))
+        print(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"))
         stop()        
       }
     }
   } else {
-    write(paste("Something wrong with targets file (or table)"),stderr())
+    print(paste("Something wrong with targets file (or table)"),stderr())
     stop()
   }
-  write(paste("Found", length(targets_list), "targets to map against, copying to mummer folder",sep=" "),stdout()) 
+  print(paste("Found", length(targets_list), "targets to map against, copying to mummer folder",sep=" "),stdout()) 
   fas <- sapply(targets_list, function(x) {
       fa <- readDNAStringSet(x[2]);
       names(fa) <- paste(x[1],names(fa),sep="*");
       fa
       })
-  writeXStringSet(do.call("c",fas),file.path(path,"targets.fasta"))
+  printXStringSet(do.call("c",fas),file.path(path,"targets.fasta"))
   targets_list$combined=file.path(path,"targets.fasta")
   return(targets_list)
 }
@@ -143,7 +143,7 @@ mummerList <- function(samples,contig_folder, contig_file, isARC,targets, column
     contigs$target = targets
     mummer_list[[contigs$sampleFolder]] <- contigs
   }
-  write(paste("Setting up",length(mummer_list),"jobs",sep=" "),stdout())  
+  print(paste("Setting up",length(mummer_list),"jobs",sep=" "),stdout())  
   return(mummer_list)
 }
 
@@ -240,10 +240,10 @@ mummertb <- sapply(mummer, function(index)
     f = file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep="."))
     pmummer <- parse_mummerFiles(f)
     df <- pmummer$df
-    write.table(df,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
+    print.table(df,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
     tb <- pmummer$tb
     if (length(tb) > 0){
-      write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
+      print.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
       fa <- readDNAStringSet(index$filename)
       nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
       tb <- tb[match(nms,tb$QUERY),]
@@ -266,7 +266,7 @@ mummertb <- sapply(mummer, function(index)
         }
       }
       fa <- fa[order(names(fa))]
-      writeXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))    
+      printXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))    
     }
 })
 
