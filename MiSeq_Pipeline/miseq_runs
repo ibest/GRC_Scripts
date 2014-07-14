@@ -5,7 +5,7 @@
 #
 
 #
-REPO=/data/miseq/data/
+REPO=/raid/miseq/data/
 #
 DIRECTORY=$(ls -Ft $REPO| grep /|head -n 1|cut -d'/' -f1)
 #DIRECTORY=$(ls -t $REPO|head -n 1)
@@ -14,8 +14,8 @@ CSTOR=/mnt/home/uirig/miseq
 POST=/mnt/home/uirig
 #CSTOR=/data/uirig_temp
 CASAVA=CASAVA
-DATA=data
-LOGS=/data/miseq/logs
+DATA=raid
+LOGS=/raid/miseq/logs
 
 CHECKFILE=runfinished
 
@@ -30,7 +30,7 @@ echo "CASAVA = $CASAVA" >> /tmp/miseq_variables.txt
 echo "DATA = $DATA" >> /tmp/miseq_variables.txt
 
 . /usr/modules/init/bash
-module load grc perl
+module load grc perl casava
 #
 
 if [ ! -d "$CSTOR"/"$CASAVA"/"$DIRECTORY" ] 
@@ -43,7 +43,7 @@ then
        		#output=$(rsync -av --delete $REPO/$DIRECTORY $CSTOR)
        		#chown -R uirig:uirigadm $CSTOR/$DIRECTORY
    
-		/data/miseq/miseq_pipeline.py $REPO/$DIRECTORY $CSTOR/$CASAVA/$DIRECTORY > /tmp/miseq_pipe.txt
+		/raid/miseq/miseq_pipeline.py $REPO/$DIRECTORY $CSTOR/$CASAVA/$DIRECTORY > /tmp/miseq_pipe.txt
 		
 		echo "After the MISEQ PIPELINE"	
 		sh $CSTOR/$CASAVA/$DIRECTORY/setup_casava.sh > $CSTOR/$CASAVA/$DIRECTORY/miseq_setup.txt
