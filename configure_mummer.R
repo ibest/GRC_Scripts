@@ -109,11 +109,11 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
     for( i in length(targets_list) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
         if (!file.exists(targets_list[[i]][2])){
-          write(paste("Targets file (",targets_list[[i]][2],") does not exist"))
+          write(paste("Targets file (",targets_list[[i]][2],") does not exist\n"),stderr())
           stop()
         }
       } else{
-        write(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"))
+        write(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"),stderr())
         stop()        
       }
     }
@@ -215,6 +215,7 @@ parse_mummerFiles <- function(file){
   tb$"QUERY LENGTH" <- df[match(tb$QUERY,df[,1]),2]
   ### Big dumb rule of 10%
   tb <- tb[tb[["QUERY COVERAGE"]] >= 0.1,]
+  if (nrow(tb) == 0)  return(data.frame()) 
   tb$BREAK = NA
   df.tmp <- df2[match(paste(tb$QUERY,tb$ORIENTATION),paste(df2$query_name,df2$orient)),]
   tb$REF_POS = df.tmp$pos_ref
@@ -235,8 +236,9 @@ parse_mummerFiles <- function(file){
 
 mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
-#    cat(index$sampleFolder,"\n")
-    pmummer <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
+    cat(index$sampleFolder,"\n")
+    f = file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep="."))
+    pmummer <- parse_mummerFiles(f)
     df <- pmummer$df
     write.table(df,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
     tb <- pmummer$tb

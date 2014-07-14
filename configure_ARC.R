@@ -1,4 +1,10 @@
 
+opt <- list(
+    samplesFile="samples.txt",
+    targetsFile="Ref_Sequences/ARC_Targets.fasta",
+    readsFolder="02-Cleaned",
+    arcFolder="03-ARC")
+
 
 arc_header <- function(ref,output){
   config_output <- c(
@@ -16,10 +22,10 @@ arc_header <- function(ref,output){
     "## FileType: PE1, PE2, or SE",
     "## FileFormat: fasta or fastq",
     paste("# reference=",ref,sep=""),
-    "# numcycles=50",
+    "# numcycles=20",
     "# mapper=bowtie2",
     "# assembler=newbler",
-    "# nprocs=40",
+    "# nprocs=60",
     "# format=fastq",
     "# verbose=True",
     "# urt=True",
@@ -28,7 +34,7 @@ arc_header <- function(ref,output){
     "# bowtie2_k=1",
     "# rip=True",
     "# cdna=False",
-    "# subsample=1",
+    "# subsample=0.1",
     "# maskrepeats=False",
     "Sample_ID\tFileName\tFileType")
   writeLines(config_output,output)
@@ -40,8 +46,6 @@ write_out_arc_config <- function(reads,sample,output){
   writeLines(config_output,output)
 }
 
-
-opt <- list(samplesFile="samples.txt",targetsFile="targets.txt",readsFolder="02-Cleaned",arcFolder="03-ARC")
 
 ### for Rosenblum Whitesands
 #opt <- list(samplesFile="S.undulatus_samples.txt",targetsFile="03-targets/S.undulatus/S.undulatus_combined.fasta",readsFolder="02-Cleaned",arcFolder="05-ARC-S.undulatus")
@@ -55,7 +59,7 @@ samples <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
 if(!file.exists(opt$targetsFile)) stop("Targets file does not exist")
 
 zz <- file(file.path(opt$arcFolder,"ARC_config.txt"), "w")  # open an output file connection
-arc_header(file.path(getwd(),opt$targetsFile),zz)
+arc_header(normalizePath(opt$targetsFile),zz)
 
 for (i in unique(samples$SAMPLE_ID)){
   read2arc <- dir(file.path(getwd(),opt$readsFolder,i),pattern="fastq",full.names=TRUE)  
