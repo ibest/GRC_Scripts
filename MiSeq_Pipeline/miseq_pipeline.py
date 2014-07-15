@@ -27,6 +27,16 @@ Dual Index:
     Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
     MariyaAmy002,MariyaAmy002,,,D701,ATTACTCG,D501,TATAGCCT,MariyaAmy002,MariyaAmy002
 
+Header format for CASAVA is always the same:
+    FCID    Lane    SampleID    SampleRef   Index   Description Control Recipe  Operator    Sample_Project
+    000000000-A91R9 1   P._putida_H2        CGATGTAT-TCTTTCCC   Putida  N   NA  Dan Putida
+    000000000-A91R9 1   P._putida_H2_RifR       TGACCAAT-TCTTTCCC   Putida  N   NA  Dan Putida
+
+Note:
+    -The above is tab separated for readability but must be CSV format according to the CASAVA manual
+    -no spaces or "#" signs (and possible other special characters) are allowed
+    -For double-barcodes simples combine the "index" and "index2" fields from the MiSeq using a '-' as shown.
+
 """
 #from Bio import SeqIO
 #import gzip
