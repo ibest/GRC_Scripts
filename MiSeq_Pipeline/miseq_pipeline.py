@@ -44,6 +44,19 @@ import os
 import sys
 #import re
 
+####### Functions #############
+def pxml(l):
+    kvp = {}
+    l2 = l.strip().strip('<').strip('>')
+    l3 = l2.split()
+    for kv in l3:
+        kv = kv.split('=')
+        if len(kv) == 2:
+            kvp[kv[0]] = kv[1].strip('"')
+    return(kvp)
+#######################################################
+
+
 #First, get command line arguments:
 if len(sys.argv) < 3:
     print "Error, could not find input parameters"
@@ -103,17 +116,21 @@ for l in inf1:
     if l[0:10] == "<Flowcell>":
         runinfo['Flowcell'] = l[10: l.find("</Flowcell>")]
     if l[0:6] == "<Read ":
-        NumCycles = Number = Index = None
-        l = l.split()
-        for e in l:
-            if '=' in e:
-                e = e.split('=')
-                if e[0] == 'Number':
-                    Number = int(e[1].strip('"'))
-                if e[0] == 'NumCycles':
-                    NumCycles = e[1].strip('"')
-                if e[0] == 'IsIndexedRead':
-                    Index = 'Y' if e[1].strip('"') == 'N' else 'I'
+        m = pxml(l)
+        Number = int(m.get('Number', None))
+        NumCycles = m.get('NumCycles', None)
+        Index = 'Y' if m.get('IsIndexedRead', None) == 'N' else 'I'
+        # NumCycles = Number = Index = None
+        # l = l.split()
+        # for e in l:
+        #     if '=' in e:
+        #         e = e.split('=')
+        #         if e[0] == 'Number':
+        #             Number = int(e[1].strip('"'))
+        #         if e[0] == 'NumCycles':
+        #             NumCycles = e[1].strip('"')
+        #         if e[0] == 'IsIndexedRead':
+        #             Index = 'Y' if e[1].strip('"') == 'N' else 'I'
         if None not in (NumCycles, Number, Index):
             runinfo['reads'][Number] = Index + NumCycles
         else:
