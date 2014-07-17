@@ -30,24 +30,24 @@ echo "CASAVA = $CASAVA" >> /tmp/miseq_variables.txt
 echo "DATA = $DATA" >> /tmp/miseq_variables.txt
 
 . /usr/modules/init/bash
-module load grc perl casava
+module load casava
 #
 
 if [ ! -d "$CSTOR"/"$CASAVA"/"$DIRECTORY" ] 
 then
-	/data/miseq/check_status.py $REPO$DIRECTORY > /tmp/miseq_check.txt
+	/$DATA/miseq/check_status.py $REPO$DIRECTORY > /tmp/miseq_check.txt
 	
-	echo "after the directory check"	
+	echo "after the directory check" >> $LOGS/miseq_runs.log	
 	if [ -f $REPO/$DIRECTORY/$CHECKFILE ]
 	then
        		#output=$(rsync -av --delete $REPO/$DIRECTORY $CSTOR)
        		#chown -R uirig:uirigadm $CSTOR/$DIRECTORY
    
-		/raid/miseq/miseq_pipeline.py $REPO/$DIRECTORY $CSTOR/$CASAVA/$DIRECTORY > /tmp/miseq_pipe.txt
+		/$DATA/miseq/miseq_pipeline.py $REPO/$DIRECTORY $CSTOR/$CASAVA/$DIRECTORY > /tmp/miseq_pipe.txt
 		
-		echo "After the MISEQ PIPELINE"	
+		echo "After the MISEQ PIPELINE"	>> $LOGS/miseq_runs.log
 		sh $CSTOR/$CASAVA/$DIRECTORY/setup_casava.sh > $CSTOR/$CASAVA/$DIRECTORY/miseq_setup.txt
-		echo "After the setup_casava"
+		echo "After the setup_casava" >> $LOGS/miseq_runs.log
 
 		cd $CSTOR/$CASAVA/$DIRECTORY/Split
 		
@@ -106,7 +106,7 @@ then
 	
 		exit 0
 	fi
-echo "After the first if"
+echo "After the first if" >> $LOGS/miseq_runs.log
 fi
 
-echo "at the end of the script"
+echo "at the end of the script" >> $LOGS/miseq_runs.log
