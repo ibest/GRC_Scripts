@@ -6,9 +6,11 @@
 
 #
 REPO=/raid/miseq/data/
-#
-DIRECTORY=$(ls -Ft $REPO| grep /|head -n 1|cut -d'/' -f1)
-#DIRECTORY=$(ls -t $REPO|head -n 1)
+if [ -z $1 ] ; then
+   DIRECTORY=$(ls -Ft $REPO| grep /|head -n 1|cut -d'/' -f1)
+else
+   DIRECTORY=$1
+fi
 #
 CSTOR=/mnt/home/uirig/miseq
 POST=/mnt/home/uirig
