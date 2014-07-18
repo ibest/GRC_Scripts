@@ -21,9 +21,11 @@ LOGS=/raid/miseq/logs
 
 CHECKFILE=runfinished
 
-email="msettles@uidaho.edu,dnew@uidaho.edu,bcheldelin@uidaho.edu,boswald@uidaho.edu"
+# *** These emails are now defined in send_email.py **** #
+#email="msettles@uidaho.edu,dnew@uidaho.edu,bcheldelin@uidaho.edu,boswald@uidaho.edu"
 #email="shunter@gmail.com"
-adminemail="boswald@uidaho.edu,shunter@gmail.com"
+#adminemail="boswald@uidaho.edu,shunter@gmail.com"
+EMAIL="python /opt/GRC_Scripts/MiSeq_Pipeline/send_email.py "
 
 echo "REPO = $REPO" > /tmp/miseq_variables.txt
 echo "DIRECTORY = $DIRECTORY" >> /tmp/miseq_variables.txt
@@ -32,7 +34,7 @@ echo "CASAVA = $CASAVA" >> /tmp/miseq_variables.txt
 echo "DATA = $DATA" >> /tmp/miseq_variables.txt
 
 . /usr/modules/init/bash
-module load casava
+module load casava python
 #
 
 if [ ! -d "$CSTOR"/"$CASAVA"/"$DIRECTORY" ] 
@@ -68,17 +70,15 @@ then
 
 		if [ $? -ne 0 ]
 		then
-			problem="There was a problem with the tar"
-			echo "$problem"|mail -s "Miseq Problem" $adminemail
+			$EMAIL --to "admins" --subject "MiSeq Problem" --message "There was a problem with the tar"
 			exit 1
 		fi
 		
 		gzip $DIRECTORY.tar
 		if [ $? -ne 0 ]
 		then
-			prob="There was a problem with the gzip"
-                        echo "prob"|mail -s "Miseq GZIP Problem" $adminemail
-                        exit 1	
+		    $EMAIL --to "admins" --subject "MiSeq Problem" --message "There was a problem with the gzip"
+            exit 1	
 		fi
 
 
@@ -103,9 +103,8 @@ then
 		mkdir $LOGS/$DIRECTORY
 		mv /tmp/miseq_* $LOGS/$DIRECTORY
 
-		success="The MiSeq run $DIRECTORY has finished successfully"
-                echo "$success"|mail -s "Miseq Run Completion" $email,$adminemail
-	
+		$EMAIL --to "all" --subject "MiSeq Run Completion" --message "The MiSeq run $DIRECTORY has finished successfully"
+
 		exit 0
 	fi
 echo "After the first if" >> $LOGS/miseq_runs.log
