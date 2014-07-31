@@ -93,13 +93,15 @@ then
 #		rm -Rf $DIRECTORY
 	
 		scripts=`ls $POST/post_processing/run/*.sh`
-		for each in $scripts
-			do 
-			echo "In the Post Process" > /tmp/miseq_post.txt
-			$each $REPO $DIRECTORY $CSTOR $CASAVA $DATA $LOGS $CHECKFILE $email $adminemail >> /tmp/miseq_post.txt
-			rm -f $each >> /tmp/miseq_post.txt
-		done
-		
+		if [ $? -eq 0 ]; then
+			for each in $scripts
+				do 
+				echo "In the Post Process" > /tmp/miseq_post.txt
+				$each $REPO $DIRECTORY $CSTOR $CASAVA $DATA $LOGS $CHECKFILE $email $adminemail >> /tmp/miseq_post.txt
+				rm -f $each >> /tmp/miseq_post.txt
+			done
+		fi
+
 		mkdir $LOGS/$DIRECTORY
 		mv /tmp/miseq_* $LOGS/$DIRECTORY
 
