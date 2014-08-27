@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 # Copyright 2013, Sam Hunter, Brice Sarver, Matt Settles
-# Modified Aug 9, 2013
+# Modified Aug 27, 2014
 """
 
 
