@@ -58,7 +58,7 @@ class fastqIter:
 
 
 def writeFastq(handle, fq):
-    handle.write('>' + fq['id'] + '\n')
+    handle.write('@' + fq['id'] + '\n')
     handle.write(fq['seq'] + '\n')
     handle.write(fq['+'] + '\n')
     handle.write(fq['qual'] + '\n')
