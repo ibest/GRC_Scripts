@@ -1,7 +1,7 @@
 
 opt <- list(
     samplesFile="samples.txt",
-    targetsFile="Ref_Sequences/ARC_Targets.fasta",
+    targetsFile="transposon.fa",
     readsFolder="02-Cleaned",
     arcFolder="03-ARC")
 
