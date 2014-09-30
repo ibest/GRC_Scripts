@@ -80,7 +80,7 @@ samples <- loadSamplesFile(opt$samplesFile,opt$samplesColumn)
             nlist <- split(iloop[unlist(apply(cbind(slist,elist),1,function(x) seq.int(x[1]+1,x[2]-1)))],
                            rep(seq.int(1,length(slist)),times=apply(cbind(slist,elist),1,function(x) (x[2]-x[1]-1))))
             names(nlist) = iloop[slist-1]
-            res <- lapply(nlist,function(x) procLines(sub("^\t","",x)))
+            res <- lapply(nlist,function(x) procLines(gsub("^\t","",x)))
             iloop = iloop[-unlist(apply(cbind(slist,elist),1,function(x) seq.int(x[1]-1,x[2])))]
         }
         if (length(iloop) > 0){
@@ -98,15 +98,15 @@ samples <- loadSamplesFile(opt$samplesFile,opt$samplesColumn)
     return(procLines(lines))
 }
 
-"newblertb" <- sapply(samples[,opt$column], function(newb){
+newblertb <- sapply(samples[,opt$samplesColumn], function(newb){
     require("Hmisc")
     cfile <- t(data.frame(strsplit(grep("contig",readLines(file.path(opt$newblerFolder,newb,"454ContigGraph.txt")),value=TRUE),"\t"),stringsAsFactors=F))
     cfile <- data.frame("Contig"=cfile[,2],"Length"=as.numeric(cfile[,3]),"Cov"=as.numeric(cfile[,4]))
     cov <- c(wtd.mean(cfile$Cov,cfile$Length),sqrt(wtd.var(cfile$Cov,cfile$Length)))    
-    pfile <- parse_newblerFiles(file.path(opt$newblerFolder,newb$sampleFolder,"454NewblerMetrics.txt"))
+    pfile <- parse_newblerFiles(file.path(opt$newblerFolder,newb,"454NewblerMetrics.txt"))
     # run data
-    areads <- as.numeric(c(pfile$runMetrics$totalNumberOfReads, unlist(strsplit(sub("%","",pfile$consensusResults$readStatus$numAlignedReads),split=" *, *"))))
-    abases <- as.numeric(c(pfile$runMetrics$totalNumberOfBases, unlist(strsplit(sub("%","",pfile$consensusResults$readStatus$numAlignedBases),split=" *, *"))))
+    areads <- as.numeric(c(pfile$runMetrics$totalNumberOfReads, unlist(strsplit(gsub("%","",pfile$consensusResults$readStatus$numAlignedReads),split=" *, *"))))
+    abases <- as.numeric(c(pfile$runMetrics$totalNumberOfBases, unlist(strsplit(gsub("%","",pfile$consensusResults$readStatus$numAlignedBases),split=" *, *"))))
     rstatus <- as.numeric(c(pfile$consensusResults$readStatus$numberAssembled,
                             pfile$consensusResults$readStatus$numberPartial,
                             pfile$consensusResults$readStatus$numberSingleton,
@@ -119,7 +119,7 @@ samples <- loadSamplesFile(opt$samplesFile,opt$samplesColumn)
                                  pfile$consensusResults$largeContigMetrics$avgContigSize,
                                  pfile$consensusResults$largeContigMetrics$N50ContigSize,
                                  pfile$consensusResults$largeContigMetrics$largestContigSize,
-                                 unlist(strsplit(sub("%","",pfile$consensusResults$largeContigMetrics$Q40PlusBases),split=" *, *"))))
+                                 unlist(strsplit(gsub("%","",pfile$consensusResults$largeContigMetrics$Q40PlusBases),split=" *, *"))))
     allcontigs <- as.numeric(c(pfile$consensusResults$allContigMetrics$numberOfContigs,pfile$consensusResults$allContigMetrics$numberOfBases))
     ndata <- c(areads,abases,rstatus,passembled,largecontigs,allcontigs,cov)
     names(ndata) <- c("totalNumberOfReads","numAlignedReads","numAlignedReadsPercent",
