@@ -107,12 +107,13 @@ newblertb <- sapply(samples[,opt$samplesColumn], function(newb){
     # run data
     areads <- as.numeric(c(pfile$runMetrics$totalNumberOfReads, unlist(strsplit(gsub("%","",pfile$consensusResults$readStatus$numAlignedReads),split=" *, *"))))
     abases <- as.numeric(c(pfile$runMetrics$totalNumberOfBases, unlist(strsplit(gsub("%","",pfile$consensusResults$readStatus$numAlignedBases),split=" *, *"))))
-    rstatus <- as.numeric(c(pfile$consensusResults$readStatus$numberAssembled,
+    rstatus <- c(pfile$consensusResults$readStatus$numberAssembled,
                             pfile$consensusResults$readStatus$numberPartial,
                             pfile$consensusResults$readStatus$numberSingleton,
                             pfile$consensusResults$readStatus$numberRepeat,
                             pfile$consensusResults$readStatus$numberOutlier,
-                            pfile$consensusResults$readStatus$numberTooShort))
+                            pfile$consensusResults$readStatus$numberTooShort)
+    rstatus <- as.numeric(sapply(strsplit(rstatus,split=" "),"[[",1L))
     passembled <- (sum(rstatus[0:1])/areads[1])*100
     largecontigs <- as.numeric(c(pfile$consensusResults$largeContigMetrics$numberOfContigs,
                                  pfile$consensusResults$largeContigMetrics$numberOfBases,
