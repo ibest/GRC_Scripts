@@ -269,17 +269,17 @@ if (opt$mappingAlgorithm == "bowtie"){
     ## run bwa
     bwa_out <- mclapply(mapping, function(index){
         dir.create(file.path(opt$mappingFolder,index$sampleFolder),showWarnings=FALSE)
-        if(length(index$PE1) try({
+        if(length(index$PE1)) try({
             system(paste("bwa mem",
                          "-M", # Mark shorter split hits as secondary (for Picard compatibility).
                          "-t", opt$mprocs,
-                         "-R", paste("@RG",
+                         "-R", paste("'@RG",
                             paste("ID",index$sampleFolder,sep=":"),         
                             paste("SM",index$sampleFolder,sep=":"),				 
                             paste("PL","ILLUMINA",sep=":"),				 
                             paste("LB","whatever",sep=":"),				 
                             paste("PU","whatever",sep=":"),
-                            paste("DS","Paired",sep=":"), sep="\t"),			 
+                            paste("DS","Paired",sep=":"), "'",sep="\t"),			 
                          index$target_path,
                          paste(index$PE1,collapse=","),
                          paste(index$PE2,collapse=","),
@@ -287,17 +287,17 @@ if (opt$mappingAlgorithm == "bowtie"){
                          "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
                          "| samtools view -bS - >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),sep=" "));
         })
-        if(length(index$SE) try({
+        if(length(index$SE)) try({
             system(paste("bwa mem",
                          "-M", # Mark shorter split hits as secondary (for Picard compatibility).
                          "-t", opt$mprocs,
-                         "-R", paste("@RG",
+                         "-R", paste("'@RG",
                                      paste("ID",index$sampleFolder,sep=":"),         
                                      paste("SM",index$sampleFolder,sep=":"),    			 
                                      paste("PL","ILLUMINA",sep=":"),				 
                                      paste("LB","whatever",sep=":"),				 
                                      paste("PU","whatever",sep=":"),
-                                     paste("DS","Paired",sep=":"), sep="\t"),			 
+                                     paste("DS","Paired",sep=":"),"'", sep="\t"),			 
                          index$target_path,
                          paste(index$SE,collapse=","),
                          #"-U",paste(index$SE,collapse=","),
