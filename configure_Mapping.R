@@ -266,7 +266,7 @@ if (opt$mappingAlgorithm == "bowtie"){
         				"-U",paste(index$SE,collapse=","),
                         sep=" "),""),
     				"2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
-    				"| samtools view -bS - >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
+    				"| samtools view -bS - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
     	})
     },mc.cores=floor(procs/opt$mprocs))
     if (!all(sapply(bowtie_out, "==", 0L))){
@@ -292,7 +292,7 @@ if (opt$mappingAlgorithm == "bowtie"){
                          paste(index$PE1,collapse=","),
                          paste(index$PE2,collapse=","),
                          "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","out",sep=".")),
-                         "| samtools view -bS - >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),sep=" "));
+                         "| samtools view -bS - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),sep=" "));
             system(paste("samtools view  -H", 
                          file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
                          "| head -n -1 > ",
@@ -313,7 +313,7 @@ if (opt$mappingAlgorithm == "bowtie"){
                          index$target_path,
                          paste(index$SE,collapse=","),
                          "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","out",sep=".")),
-                         "| samtools view -bS - >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),sep=" "));
+                         "| samtools view -bS - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),sep=" "));
             system(paste("samtools view  -H", 
                          file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
                          "| head -n -1 > ",
@@ -347,10 +347,10 @@ if (opt$mappingAlgorithm == "bowtie"){
 samtools_out <- mclapply(mapping, function(index){
 	dir.create(file.path(opt$mappingFolder,index$sampleFolder))
 	try({
-		system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep="."))));
-		system(paste("samtools index",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
-		system(paste("samtools idxstats",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"idxstats",sep="."))))
-		system(paste("samtools flagstat",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"flagstat",sep="."))))
+		system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep=".")),"2> /dev/null",sep=" "));
+		system(paste("samtools index",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),"2> /dev/null",sep=" "));
+		system(paste("samtools idxstats",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"idxstats",sep=".")),"2> /dev/null",sep=" "))
+		system(paste("samtools flagstat",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"flagstat",sep=".")),"2> /dev/null",sep=" "))
 	})
 },mc.cores=procs)
 if (!all(sapply(samtools_out, "==", 0L))){
