@@ -40,7 +40,7 @@ option_list <- list(
   make_option(c("-g", "--gzip_extracted"), action="store_true", default=FALSE,
               help="gzip extracted read fastq files [default %default]",
               dest="gzip_extracted"),
-  make_option(c("-e", "--extractFolder"), type="character", default="03-Extracted",
+  make_option(c("-e", "--extractFolder"), type="character", default="04-Extracted",
               help="if extractUnmapped, and/or extractMapped is TRUE, save resulting fastq to this folder [default %default]",
               dest="screenFolder"),
   make_option(c("-l", "--localmode"), action="store_true", default=FALSE,
@@ -266,8 +266,7 @@ if (opt$extract_unmapped){## Extract Unmapped Reads
   extract_out <- mclapply(bowtie, function(index){
     try({
         dir.create(file.path(opt$screenFolder,index$sampleFolder));
-        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "),intern=TRUE);
-        #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "));
+        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "),intern=TRUE);
     })
   },mc.cores=procs/2)
   extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
