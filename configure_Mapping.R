@@ -19,17 +19,17 @@ option_list <- list(
 	make_option(c("-r", "--readFolder"), type="character", default="02-Cleaned",
 							help="Directory where the sequence data is stored [default %default]",
 							dest="readFolder"),
-	make_option(c("-M", "--mappingAlgorithm"), type="character", default="bowtie",
+	make_option(c("-M", "--mappingAlgorithm"), type="character", default="bwa",
 							help="Mapping algorithm to use, supported types are 'bowtie' and 'bwa' [default %default]",
 							dest="mappingAlgorithm"),
 	make_option(c("-l", "--localmode"), action="store_true", default=FALSE,
 							help="use local mode in bowtie2 [default %default]",
 							dest="localmode"),	
-	make_option(c("-b", "--mappingFolder"), type="character", default="03-Bowtie",
-							help="Directory where to store the bowtie results [default %default]",
+	make_option(c("-b", "--mappingFolder"), type="character", default=NA,
+							help="Directory where to store the bowtie results [default '03-[mappingAlgorithm]']",
 							dest="mappingFolder"),
 	make_option(c("-t", "--mappingTargets"), type="character", default="mapping_targets.txt",
-							help="Path to a bowtie2 build, or a tab delimeted file with name\tbowtie2 index pairs to run bowtie against [default %default]",
+							help="Path to a build (or index), or a tab delimeted file with name\t[index pairs] to run mapping against [default %default]",
 							dest="mappingTarget"),
 	make_option(c("-p", "--processors"), type="integer", default=0,
 							help="number of processors to use [defaults to number available]",
@@ -60,6 +60,14 @@ opt <- parse_args(OptionParser(option_list=option_list))
 if (!(opt$mappingAlgorithm %in% c("bowtie","bwa")))
     stop("Mapping algorithm parameter must be one of 'bowtie' or 'bwa'")
 
+if (is.na(opt$mappingFolder)){
+    if (opt$mappingAlgorithm == "bowtie")
+        opt$mappingFolder = "03-Bowtie"
+    else if (opt$mappingAlgorithm == "bwa")
+        opt$mappingFolder = "03-BWA"
+    else
+        stop("Error in setting mapping folder")
+}
 ######################################################################
 ## loadSampleFile
 ## reads in the sample sheet, check for expected format (columns SAMPLE_ID and SEQUENCE_ID)
