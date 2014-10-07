@@ -392,32 +392,31 @@ write.table(targetTables,file.path(opt$mappingFolder,"SummarySample2Targets.txt"
 ## extract unmapped reads
 if (opt$extract_unmapped){## Extract Unmapped Reads
 	dir.create(file.path(opt$screenFolder))
-	extract_out <- mclapply(mapped, function(index){
+	extract_out <- mclapply(mapping, function(index){
 		try({
 				dir.create(file.path(opt$screenFolder,index$sampleFolder));
 				system(paste("samtools view",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "),intern=TRUE);
 		})
 	},mc.cores=procs/2)
 	extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
-	extract_table <- data.frame(ID=names(mapped),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
+	extract_table <- data.frame(ID=names(mapping),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
 	write.table(extract_table,file.path(opt$screenFolder,"SummaryUnmapped.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
 }
 
 # #####################################################
 # ## extract unmapped reads
-if (opt$extract_mapped){## Extract Unmapped Reads
-	 dir.create(file.path(opt$screenFolder))
-	 extract_out <- mclapply(mapped, function(index){
-		 try({
-			 dir.create(file.path(opt$screenFolder,index$sampleFolder));
-			 system(paste("samtools view",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_mapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"mapped",sep=".")),sep=" "),intern=TRUE);
-			 #print(paste("samtools view",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_mapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"mapped",sep=".")),sep=" "));
-		 })
-	 },mc.cores=procs/2)
-	 extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
-	 extract_table <- data.frame(ID=names(mapped),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
-	 write.table(extract_table,file.path(opt$screenFolder,"SummaryMapped.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
-}
+# if (opt$extract_mapped){## Extract Unmapped Reads
+# 	 dir.create(file.path(opt$screenFolder))
+# 	 extract_out <- mclapply(mapping, function(index){
+# 		 try({
+# 			 dir.create(file.path(opt$screenFolder,index$sampleFolder));
+# 			 system(paste("samtools view",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_mapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"mapped",sep=".")),sep=" "),intern=TRUE);
+# 		 })
+# 	 },mc.cores=procs/2)
+# 	 extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
+# 	 extract_table <- data.frame(ID=names(mapping),Records=sapply(extract_out,"[[",2L),PE_pairs=sapply(extract_out,"[[",4L),SE_reads=sapply(extract_out,"[[",6L))
+# 	 write.table(extract_table,file.path(opt$screenFolder,"SummaryMapped.txt"),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
+# }
 
 ######################################################
 ## generate VCF files
@@ -426,7 +425,7 @@ if (opt$extract_mapped){## Extract Unmapped Reads
 # 
 # gtk <- "java -Xmx6g -jar /mnt/home/msettles/opt/src/GenomeAnalysisTK-2.7-4/GenomeAnalysisTK.jar"
 # if (opt$generate_vcf){
-#	 vcf_out <- mclapply(bowtie, function(index){
+#	 vcf_out <- mclapply(mapping, function(index){
 #		 try({
 #			 system(paste(gtk,
 #									"-T HaplotypeCaller",
