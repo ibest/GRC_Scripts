@@ -133,6 +133,8 @@ for line in insam:
         line2 = line.strip().split()
         flag = int(line2[1])
         #Handle SE:
+        if (flag & 0x100): # secondary alignment
+            continue
         # mapped SE reads have 0x1 set to 0, and 0x4 (third bit) set to 1
         if not (flag & 0x1) and not (flag & 0x4):
             ID = line2[0].split("#")[0]
