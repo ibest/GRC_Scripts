@@ -57,6 +57,7 @@ parser.add_option('-s', '--strict', help="strict, requires both pairs to be mapp
 
 (options,  args) = parser.parse_args()  # uncomment this line for command line support
 
+
 if len(args) == 1:
     infile = args[0]
         #Start opening input/output files:
@@ -88,6 +89,28 @@ else:
     outSE = gzip.open(base + "_SE.fastq.gz", 'wb')
 
 
+
+def reverseComplement(s):
+    """
+    given a seqeucne with 'A', 'C', 'T', and 'G' return the reverse complement
+    """
+    basecomplement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
+    letters = list(s)
+    try:
+        letters = [basecomplement[base] for base in letters]
+    except:
+        raise
+    return ''.join(letters[::-1])
+
+
+def reverse(s):
+    """
+    given a sequence return the reverse 
+    """
+    letters = list(s)
+    return ''.join(letters[::-1])
+
+
 def writeread(ID, r1, r2):
     #read1
     outPE1.write("@" + ID + "#0/1" '\n')
@@ -113,6 +136,9 @@ for line in insam:
         # mapped SE reads have 0x1 set to 0, and 0x4 (third bit) set to 1
         if not (flag & 0x1) and not (flag & 0x4):
             ID = line2[0].split("#")[0]
+            if (flag & 0x10):
+                line2[9] = reverseComplement(line2[9])
+                line2[10] = reverse(line2[10])
             outSE.write("@" + ID + '\n')
             outSE.write(line2[9] + '\n')
             outSE.write('+\n' + line2[10] + '\n')
@@ -125,6 +151,9 @@ for line in insam:
             if (flag & 0x40):  # is this PE1 (first segment in template)
                 #PE1 read, check that PE2 is in dict and write out
                 ID = line2[0].split("#")[0]
+                if (flag & 0x10):
+                    line2[9] = reverseComplement(line2[9])
+                    line2[10] = reverse(line2[10])
                 r1 = [line2[9], line2[10]]  # sequence + qual
                 if ID in PE2:
                     writeread(ID, r1, PE2[ID])
@@ -135,6 +164,9 @@ for line in insam:
             elif (flag & 0x80):  # is this PE2 (last segment in template)
                 #PE2 read, check that PE1 is in dict and write out
                 ID = line2[0].split("#")[0]
+                if (flag & 0x10):
+                    line2[9] = reverseComplement(line2[9])
+                    line2[10] = reverse(line2[10])
                 r2 = [line2[9], line2[10]]
                 if ID in PE1:
                     writeread(ID, PE1[ID], r2)

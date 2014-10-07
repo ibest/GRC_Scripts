@@ -270,7 +270,7 @@ if (opt$mappingAlgorithm == "bowtie"){
     bwa_out <- mclapply(mapping, function(index){
         dir.create(file.path(opt$mappingFolder,index$sampleFolder),showWarnings=FALSE)
         if(length(index$PE1)) try({
-            system(paste("bwa mem",
+            res<-system(paste("bwa mem",
                          "-M", # Mark shorter split hits as secondary (for Picard compatibility).
                          "-t", opt$mprocs,
                          "-R", paste("'@RG",
@@ -283,34 +283,50 @@ if (opt$mappingAlgorithm == "bowtie"){
                          index$target_path,
                          paste(index$PE1,collapse=","),
                          paste(index$PE2,collapse=","),
-                         #"-U",paste(index$SE,collapse=","),
-                         "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
+                         "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","out",sep=".")),
                          "| samtools view -bS - >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),sep=" "));
+            system(paste("samtools view  -H", 
+                         file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
+                         "| head -n -1 > ",
+                         file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")),
+                         "2> /dev/null",sep=" "))
         })
         if(length(index$SE)) try({
-            system(paste("bwa mem",
+            res2<-system(paste("bwa mem",
                          "-M", # Mark shorter split hits as secondary (for Picard compatibility).
                          "-t", opt$mprocs,
                          "-R", paste("'@RG",
-                                     paste("ID",index$sampleFolder,sep=":"),         
-                                     paste("SM",index$sampleFolder,sep=":"),    			 
-                                     paste("PL","ILLUMINA",sep=":"),				 
-                                     paste("LB","whatever",sep=":"),				 
-                                     paste("PU","whatever",sep=":"),
-                                     paste("DS","Paired",sep=":"),"'", sep="\t"),			 
+                             paste("ID",index$sampleFolder,sep=":"),         
+                             paste("SM",index$sampleFolder,sep=":"),    			 
+                             paste("PL","ILLUMINA",sep=":"),				 
+                             paste("LB","whatever",sep=":"),				 
+                             paste("PU","whatever",sep=":"),
+                             paste("DS","Paired",sep=":"),"'", sep="\t"),			 
                          index$target_path,
                          paste(index$SE,collapse=","),
-                         #"-U",paste(index$SE,collapse=","),
-                         "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
+                         "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","out",sep=".")),
                          "| samtools view -bS - >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),sep=" "));
-        })        
-        system(paste("samtools merge", 
+            system(paste("samtools view  -H", 
+                         file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
+                         "| head -n -1 > ",
+                         file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")),
+                         "2> /dev/null",sep=" "))
+        })
+        ## reheader
+        if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep="."))))
+            file.remove(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")))
+        res3 <- system(paste("samtools cat -h", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")), "-o",
                      file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
-                     ifelse(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
+                     ifelse(file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep="."))),
                             file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),""),
-                     ifelse(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),
+                     ifelse(file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep="."))),
                             file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),""),
-                     sep=" "))
+                     "2> /dev/null",sep=" "))
+        if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep="."))))
+            file.remove(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")))     
+        if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep="."))))
+            file.remove(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")))     
+        return(as.integer(res | res2 | res3))
     },mc.cores=floor(procs/opt$mprocs))
     if (!all(sapply(bwa_out, "==", 0L))){
         write(paste("Something went wrong with bwa mapping some jobs failed"),stderr())
