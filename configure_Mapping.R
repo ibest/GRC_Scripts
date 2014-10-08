@@ -37,7 +37,10 @@ option_list <- list(
 	make_option(c("-q", "--mapping_processors"), type="integer", default=10,
 							help="number of processors to use in the mapping call [defaults %default]",
 							dest="mprocs"),
-	make_option(c("-u", "--extractUnmapped"), action="store_true", default=FALSE,
+	make_option(c("-n", "--sortByReadID"), action="store_true", default=FALSE,
+	            help="When sorting bam files, sort by read ID (samtools -n option) [default %default]",
+	            dest="sortByReadID"),
+    make_option(c("-u", "--extractUnmapped"), action="store_true", default=FALSE,
 							help="Extract unmapped reads from the resulting bam file [default %default]",
 							dest="extract_unmapped"),
 	make_option(c("-m", "--extractMapped"), action="store_true", default=FALSE,
@@ -347,7 +350,7 @@ if (opt$mappingAlgorithm == "bowtie"){
 samtools_out <- mclapply(mapping, function(index){
 	dir.create(file.path(opt$mappingFolder,index$sampleFolder))
 	try({
-		system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep=".")),"2> /dev/null",sep=" "));
+		system(paste("samtools sort",ifelse(opt$sortByReadID,"-n",""),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep=".")),"2> /dev/null",sep=" "));
 		system(paste("samtools index",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),"2> /dev/null",sep=" "));
 		system(paste("samtools idxstats",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"idxstats",sep=".")),"2> /dev/null",sep=" "))
 		system(paste("samtools flagstat",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"flagstat",sep=".")),"2> /dev/null",sep=" "))
