@@ -19,7 +19,7 @@ option_list <- list(
   make_option(c("-m", "--miniumumLength"), type="integer", default=150,
               help="Discard reads less then minimum length [default %default]",
               dest="minL"),
-  make_option(c("-o", "--overlap"), type="integer", default=275,
+  make_option(c("-o", "--overlap"), type="integer", default=450,
               help="Overlap parameter for flash [default %default]",
               dest="overlap"),
   make_option(c("-O", "--skip-overlap"), action="store_true", default=FALSE,
