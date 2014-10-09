@@ -75,11 +75,15 @@ parser.add_option('-d', '--directory', help="Directory containing read files to 
 parser.add_option('-o', '--output', help="Directory + prefix to output de-duplicated reads",
                   action="store", type="str", dest="output_dir")
 
+parser.add_option('-s', '--skip_dup', help="Skip de-dupping, merge files only and format for further processing in seqyclean",
+                  action="store_true", dest="skip")
+
 
 (options, args) = parser.parse_args()
 
 sample_dir = options.sample_dir
 output_dir = options.output_dir
+skip = option.skip
 
 if len(args) != 0 or sample_dir is None or output_dir is None:
     parser.print_help()
@@ -95,7 +99,7 @@ def listdir_nohidden(path):
             yield f
 
 
-def main(infile1, infile2, outfile1, outfile2):
+def main(infile1, infile2, outfile1, outfile2,skip):
 #Set up the global variables
     global count
     global i
@@ -142,7 +146,7 @@ def main(infile1, infile2, outfile1, outfile2):
             else:
                 count[comb] += 1
                 c = count[comb]
-            if c == 1:
+            if c == 1 | skip is True:
                 writeFastq(outfile1, seq1)
                 writeFastq(outfile2, seq2)
                 #SeqIO.write(seq1, outfile1, "fastq")
@@ -180,22 +184,22 @@ for f in files:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_R2".join(f.split("_R1"))))
-        main(infile1, infile2, outfile1, outfile2)
+        main(infile1, infile2, outfile1, outfile2, skip)
     elif "READ1" in f:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "READ2".join(f.split("READ1"))))
-        main(infile1, infile2, outfile1, outfile2)
+        main(infile1, infile2, outfile1, outfile2, skip)
     elif "_1.fastq" in f:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_2.fastq".join(f.split("_1.fastq"))))
-        main(infile1, infile2, outfile1, outfile2)
+        main(infile1, infile2, outfile1, outfile2, skip)
     elif '_PE1.fastq' in f:
         print f
         infile1 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, f))
         infile2 = os.path.realpath(os.path.join(os.getcwd(), sample_dir, "_PE2.fastq".join(f.split("_PE1.fastq"))))
-        main(infile1, infile2, outfile1, outfile2)
+        main(infile1, infile2, outfile1, outfile2, skip)
     else:
         print "%s not recognized" % f
 

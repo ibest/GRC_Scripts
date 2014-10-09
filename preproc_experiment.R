@@ -29,7 +29,7 @@ option_list <- list(
               help="number of processors to use [default %default]",
               dest="procs"),
   make_option(c("-s", "--skip-duduplicates"), action="store_true", default=FALSE,
-              help="do not perform the deduplication step [default %default] NOT FUNCTIONAL YET",
+              help="do not perform the deduplication step [default %default] ",
               dest="skip_dedup"),
   make_option(c("-c", "--contaminants-folder"), type="character", default=NULL,
               help="folder name with contaminant sequences in fasta format [default %default]",
@@ -54,8 +54,8 @@ suppressPackageStartupMessages(library("parallel"))
 ####################################################
 ### FUNCTIONS
 ####################################################
-screen_duplicates <- function(r,o,d){
-  paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+screen_duplicates <- function(r,o,d,s){
+  paste("screen_duplicates_PE.py",ifelse(s,"-s",,""),"-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 #  paste("screen_duplicates_PE_sra.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
@@ -129,16 +129,20 @@ get_phiX <- function(){
 #qual <- opt$qual
 #minL <- 120
 #overlap <- opt$overlap
-process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,polyA,minL,overlap,noOverlap,i64){
+process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,polyA,minL,overlap,noOverlap,i64,skipd){
   write(paste(sample,":Processing folder ",folder,sep=""),stdout())
   if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
     if(!file.exists(file.path(Clean_Folder, sample))) dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
-    write(paste(sample,":\tde-duplicating reads",sep=""),stdout())
+    if (skipd){
+        write(paste(sample,":\tmerging any reads in RawData",sep=""),stdout())
+    }else{
+        write(paste(sample,":\tde-duplicating reads",sep=""),stdout())        
+    }
 
-    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
+    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample),skipd))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
@@ -267,7 +271,7 @@ write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" 
 mclapply(seq.int(1,nrow(targets)), function(index){
   folder <- targets$SEQUENCE_ID[index]
   sample <- targets$SAMPLE_ID[index]
-  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$polyA,opt$minL,opt$overlap,opt$noOverlap,opt$i64)})
+  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$polyA,opt$minL,opt$overlap,opt$noOverlap,opt$i64,opt$skip_dedup)})
   write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
   try({system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))})
 },mc.cores=opt$procs)
