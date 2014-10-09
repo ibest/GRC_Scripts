@@ -55,7 +55,7 @@ suppressPackageStartupMessages(library("parallel"))
 ### FUNCTIONS
 ####################################################
 screen_duplicates <- function(r,o,d,s){
-  paste("screen_duplicates_PE.py",ifelse(s,"-s",,""),"-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+  paste("screen_duplicates_PE.py",ifelse(s,"-s",""),"-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 #  paste("screen_duplicates_PE_sra.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
@@ -279,9 +279,9 @@ mclapply(seq.int(1,nrow(targets)), function(index){
 
 ##########################################
 ### Generate Read Report
-#write(paste("Generating Final Preprocessing Report for all samples",sep=" "),stdout())
+write(paste("Generating Final Preprocessing Report for all samples",sep=" "),stdout())
 
-#system(paste("preproc_report -f", opt$samplesFile))
+system(paste("preproc_report -f", opt$samplesFile,"-c",Clean_Folder,"-d",Final_Folder,sep=" "))
 
-#write("Finished processing samples",stdout())
+write("Finished processing samples",stdout())
 
