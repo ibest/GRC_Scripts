@@ -83,7 +83,7 @@ parser.add_option('-s', '--skip_dup', help="Skip de-dupping, merge files only an
 
 sample_dir = options.sample_dir
 output_dir = options.output_dir
-skip = option.skip
+skip = options.skip
 
 if len(args) != 0 or sample_dir is None or output_dir is None:
     parser.print_help()
