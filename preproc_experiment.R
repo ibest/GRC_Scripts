@@ -92,7 +92,7 @@ link_illumina <- function(se1,se2,r1,r2,o){
   } else{
     se = se1
   }
-  output <- paste("ln -sf",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";","ln -sf",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","ln -sf",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
+  output <- paste("mv -f",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";","mv -f",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","mv -f",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
   output
 }
 
@@ -108,7 +108,7 @@ seqyclean_454 <- function(sff,o,minL=225,q=24,polyA,folder,sample){
 	paste("seqyclean -qual",q,q,vc_param,ifelse(polyA,"-polyat",""),"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
 }
 link_454 <- function(sff,o){
-	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
+	paste("mv -f",sff,paste(o,"sff",sep="."),sep=" ")
 }
 
 final_report_fun <- function(f,o){
