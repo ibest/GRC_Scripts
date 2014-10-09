@@ -176,7 +176,7 @@ outfile2 = sp_gzip_write(output_dir + "_nodup_PE2.fastq.gz")
 
 files = listdir_nohidden('./' + sample_dir)
 
-print "skip " + skip
+print "skip " + str(skip)
 for f in files:
     if "_R1" in f:
         print f
