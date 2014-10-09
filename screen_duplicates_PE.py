@@ -76,7 +76,7 @@ parser.add_option('-o', '--output', help="Directory + prefix to output de-duplic
                   action="store", type="str", dest="output_dir")
 
 parser.add_option('-s', '--skip_dup', help="Skip de-dupping, merge files only and format for further processing in seqyclean",
-                  action="store_false", dest="skip",default=False)
+                  action="store_true", dest="skip",default=False)
 
 
 (options, args) = parser.parse_args()
