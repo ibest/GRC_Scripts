@@ -76,14 +76,14 @@ parser.add_option('-o', '--output', help="Directory + prefix to output de-duplic
                   action="store", type="str", dest="output_dir")
 
 parser.add_option('-s', '--skip_dup', help="Skip de-dupping, merge files only and format for further processing in seqyclean",
-                  action="store_true", dest="skip")
+                  action="store_false", dest="skip",default=False)
 
 
 (options, args) = parser.parse_args()
 
 sample_dir = options.sample_dir
 output_dir = options.output_dir
-skip = option.skip
+skip = options.skip
 
 if len(args) != 0 or sample_dir is None or output_dir is None:
     parser.print_help()
