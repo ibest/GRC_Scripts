@@ -146,7 +146,7 @@ def main(infile1, infile2, outfile1, outfile2,skip):
             else:
                 count[comb] += 1
                 c = count[comb]
-            if c == 1 | skip is True:
+            if c == 1:
                 writeFastq(outfile1, seq1)
                 writeFastq(outfile2, seq2)
                 #SeqIO.write(seq1, outfile1, "fastq")
