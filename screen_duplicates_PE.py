@@ -132,27 +132,24 @@ def main(infile1, infile2, outfile1, outfile2,skip):
             c = 0
             seq1 = iterator1.next()
             seq2 = iterator2.next()
-            #comb = seq1.seq.tostring() + seq2.seq.tostring()
-            #comb = seq1[10:35] + seq2[10:35]
-            comb = seq1['seq'][10:35] + seq2['seq'][10:35]
-            #rcomb = comb.reverse_complement()
-            rcomb = revcomp(comb)
-            #comb = str(comb.seq)
-            #rcomb = str(rcomb.seq)
-            if rcomb in count:
-                count[rcomb] += 1
-                c = count[rcomb]
-                rev += 1
-            else:
-                count[comb] += 1
-                c = count[comb]
-            if c == 1:
+            if skip is True: ## skip dedup, just write out
                 writeFastq(outfile1, seq1)
                 writeFastq(outfile2, seq2)
-                #SeqIO.write(seq1, outfile1, "fastq")
-                #SeqIO.write(seq2, outfile2, "fastq")
             else:
-                duplicates += 1
+                comb = seq1['seq'][10:35] + seq2['seq'][10:35]
+                rcomb = revcomp(comb)
+                if rcomb in count:
+                    count[rcomb] += 1
+                    c = count[rcomb]
+                    rev += 1
+                else:
+                    count[comb] += 1
+                    c = count[comb]
+                if c == 1:
+                    writeFastq(outfile1, seq1)
+                    writeFastq(outfile2, seq2)
+                else:
+                    duplicates += 1
             i += 1
             if i % 100000 == 0:
                 print "Pairs:", "| reads:", i, "| duplicates:", duplicates, "| fwd:", duplicates-rev, "| rev:", rev, "| percent:", round(100.0*duplicates/i, 2), "| reads/sec:", round(i/(time.time() - start), 0)
@@ -179,6 +176,7 @@ outfile2 = sp_gzip_write(output_dir + "_nodup_PE2.fastq.gz")
 
 files = listdir_nohidden('./' + sample_dir)
 
+print "skip " + skip
 for f in files:
     if "_R1" in f:
         print f
