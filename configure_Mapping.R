@@ -26,11 +26,11 @@ option_list <- list(
 							help="use local mode in bowtie2 [default %default]",
 							dest="localmode"),	
 	make_option(c("-b", "--mappingFolder"), type="character", default=NA,
-							help="Directory where to store the bowtie results [default '03-[mappingAlgorithm]']",
+							help="Directory where to store the mapping results [default '03-[mappingAlgorithm]']",
 							dest="mappingFolder"),
 	make_option(c("-t", "--mappingTargets"), type="character", default="mapping_targets.txt",
-							help="Path to a build (or index), or a tab delimeted file with name\t[index pairs] to run mapping against [default %default]",
-							dest="mappingTarget"),
+	                        help="Path to a fasta file, or tab delimeted file with [target name]\t[target fasta]\t[target gtf] to run mapping against [default %default]",
+            	            dest="mappingTarget"),
 	make_option(c("-p", "--processors"), type="integer", default=0,
 							help="number of processors to use [defaults to number available]",
 							dest="procs"),
@@ -38,8 +38,8 @@ option_list <- list(
 							help="number of processors to use in the mapping call [defaults %default]",
 							dest="mprocs"),
 	make_option(c("-n", "--sortByReadID"), action="store_true", default=FALSE,
-	            help="When sorting bam files, sort by read ID (samtools -n option) [default %default]",
-	            dest="sortByReadID"),
+	                        help="When sorting bam files, sort by read ID (samtools -n option) [default %default]",
+	                        dest="sortByReadID"),
     make_option(c("-u", "--extractUnmapped"), action="store_true", default=FALSE,
 							help="Extract unmapped reads from the resulting bam file [default %default]",
 							dest="extract_unmapped"),
@@ -130,7 +130,7 @@ if (is.na(opt$mappingFolder)){
 ##	Prepare the bowtie2 targets to run bowtie2 
 ## 
 ## Parameters
-##	targets: filename of bowtie2 build, fasta file or text file with multiple targets
+##	targets: filename of targets builds, fasta file or text file with multiple targets
 "prepareTargets" <- function(targets, algorithm){
 	### single target, indexes exist
 	if ((algorithm == "bowtie" & file.exists(paste(targets,"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(targets,"bwt",sep=".")))){
