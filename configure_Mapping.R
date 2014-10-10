@@ -40,7 +40,10 @@ option_list <- list(
 	make_option(c("-n", "--sortByReadID"), action="store_true", default=FALSE,
 	                        help="When sorting bam files, sort by read ID (samtools -n option) [default %default]",
 	                        dest="sortByReadID"),
-    make_option(c("-u", "--extractUnmapped"), action="store_true", default=FALSE,
+	make_option(c("-i", "--ignoreSingles"), action="store_true", default=FALSE,
+	                        help="Ignore any single-end files [default %default]",
+	                        dest="ignoreSingles"),
+	make_option(c("-u", "--extractUnmapped"), action="store_true", default=FALSE,
 							help="Extract unmapped reads from the resulting bam file [default %default]",
 							dest="extract_unmapped"),
 	make_option(c("-m", "--extractMapped"), action="store_true", default=FALSE,
@@ -226,6 +229,7 @@ if (is.na(opt$mappingFolder)){
 		reads <- dir(path=file.path(reads_folder,samples[i,column]),pattern="fastq$",full.names=TRUE)
 		map <- lapply(c("TEST","_merged|_SE","_PE1|_R1","_PE2|_R2"),grep,x=reads,value=TRUE)
 		names(map) <- c("TEST","SE","PE1","PE2")
+        if (opt$ignoreSingles) map$SE=character(0)
 		map$sampleFolder=samples[i,column]
 		for(j in targets){
 			mapping_list[[paste(map$sampleFolder,j[1],sep="_")]] <- map

@@ -92,7 +92,7 @@ link_illumina <- function(se1,se2,r1,r2,o){
   } else{
     se = se1
   }
-  output <- paste("mv -f",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";","mv -f",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","mv -f",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
+  output <- paste("mv -f",file.path(se),paste(o,"merged_SE.fastq",sep="_"),";","mv -f",file.path(r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","mv -f",file.path(r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
   output
 }
 
@@ -173,7 +173,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
-    write(paste(sample,":\tcreating links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
+    write(paste(sample,":\tMoving final files to ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_illumina(SE1,SE2,Read1,Read2,output))
     write(paste(sample,":\tFinished",sep=""),stdout())
 
