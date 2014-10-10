@@ -127,7 +127,7 @@ if (is.na(opt$mappingFolder)){
 
 ######################################################################
 ## prepareTargets
-##	Prepare the bowtie2 targets to run bowtie2 
+##	Prepare the mapping targets 
 ## 
 ## Parameters
 ##	targets: filename of targets builds, fasta file or text file with multiple targets
@@ -140,7 +140,7 @@ if (is.na(opt$mappingFolder)){
 	### single target, need to build indexes
 	if (!file.exists(targets)){
 		write(paste("Targets file (",targets,") does not exist"), stderr())
-		stop()
+		stop("Quiting")
 	}
 	if (algorithm == "bowtie"){
 		if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"rev.2.bt2",sep="."))){
@@ -148,7 +148,7 @@ if (is.na(opt$mappingFolder)){
 			res <- system(paste("bowtie2-build",targets,sub(".fasta$|.fa$|.fna$","",targets)),ignore.stdout=T, ignore.stderr=T)
 			if (res != 0){
 				write(paste("Failed building Bowtie2 indexes for (",targets,") "), stderr())
-				stop()
+				stop("Quiting")
 			}
 		}
 		targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))	
@@ -158,7 +158,7 @@ if (is.na(opt$mappingFolder)){
 				res <- system(paste("bwa index",targets),ignore.stdout=T, ignore.stderr=T) 
 				if (res != 0){
 					write(paste("Failed building BWA indexes for (",targets,") "), stderr())
-					stop()
+					stop("Quiting")
 				}		
 			}
 			targets_list <- list(c(basename(targets),targets))					
@@ -171,7 +171,7 @@ if (is.na(opt$mappingFolder)){
 			if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
 				if (!file.exists(targets_list[[i]][2])){
 					write(paste("Targets file (",targets_list[[i]][2],") does not exist"), stderr())
-					stop()
+					stop("Quiting")
 				}
 				if (algorithm == "bowtie"){
 					if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"rev.2.bt2",sep="."))){
@@ -179,7 +179,7 @@ if (is.na(opt$mappingFolder)){
 						res <- system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])),ignore.stdout=T, ignore.stderr=T)
 						if (res != 0){
 							write(paste("Failed building Bowtie2 indexes for (",targets_list[[i]][2],") "), stderr())
-							stop()
+							stop("Quiting")
 						}
 					}
 					targets_list[[i]][2] <- sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])
@@ -189,7 +189,7 @@ if (is.na(opt$mappingFolder)){
 						res <- system(paste("bwa index",targets_list[[i]][2]),ignore.stdout=T, ignore.stderr=T) 
 						if (res != 0){
 							write(paste("Failed building BWA indexes for (",targets_list[[i]][2],") "), stderr())
-							stop()
+							stop("Quiting")
 						}		
 					}
 					targets_list[[i]][2] <- targets_list[[i]][2]			 
@@ -198,7 +198,7 @@ if (is.na(opt$mappingFolder)){
 		}
 	} else {
 		write(paste("Something wrong with targets file (or table)"),stderr())
-		stop()
+		stop("Quiting")
 	}
 	write(paste("Found", length(targets_list), "targets to map against",sep=" "),stdout())	
 	return(targets_list)
