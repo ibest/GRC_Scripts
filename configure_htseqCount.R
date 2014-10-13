@@ -22,7 +22,7 @@ option_list <- list(
     make_option(c("-t", "--mappingTargets"), type="character", default="mapping_targets.txt",
                 help="Path to a gtf file, or tab delimeted file with [target name]\t[target fasta]\t[target gtf] to run mapping against [default %default]",
                 dest="mappingTarget"),
-    make_option(c("-h", "--htseqFolder"), type="character", default="04-HTseqCounts",
+    make_option(c("-H", "--htseqFolder"), type="character", default="04-HTseqCounts",
                 help="Directory where to store the HtSeq-cont results [default %default]",
                 dest="htseqFolder"),
     make_option(c("-r", "--order"), metavar = "POS", type="character", default="name",
