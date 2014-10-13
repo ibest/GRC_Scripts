@@ -29,7 +29,7 @@ option_list <- list(
 							help="Directory where to store the mapping results [default '03-[mappingAlgorithm]']",
 							dest="mappingFolder"),
 	make_option(c("-t", "--mappingTargets"), type="character", default="mapping_targets.txt",
-	                        help="Path to a fasta file, or tab delimeted file with [target name]\t[target fasta]\t[target gtf] to run mapping against [default %default]",
+	                        help="Path to a fasta file, or tab delimeted file with [target name]\t[target fasta]\t[target gtf, optional] to run mapping against [default %default]",
             	            dest="mappingTarget"),
 	make_option(c("-p", "--processors"), type="integer", default=0,
 							help="number of processors to use [defaults to number available]",
@@ -38,10 +38,10 @@ option_list <- list(
 							help="number of processors to use in the mapping call [defaults %default]",
 							dest="mprocs"),
 	make_option(c("-n", "--sortByReadID"), action="store_true", default=FALSE,
-	                        help="When sorting bam files, sort by read ID (samtools -n option) [default %default]",
+	                        help="When sorting bam files, sort by read ID (samtools -n option), for compatability with htseq-count [default %default]",
 	                        dest="sortByReadID"),
 	make_option(c("-i", "--ignoreSingles"), action="store_true", default=FALSE,
-	                        help="Ignore any single-end files [default %default]",
+	                        help="Ignore any single-end files, for compatability with htseq-count [default %default]",
 	                        dest="ignoreSingles"),
 	make_option(c("-u", "--extractUnmapped"), action="store_true", default=FALSE,
 							help="Extract unmapped reads from the resulting bam file [default %default]",
@@ -284,6 +284,7 @@ if (opt$mappingAlgorithm == "bowtie"){
     ## run bwa
     bwa_out <- mclapply(mapping, function(index){
         dir.create(file.path(opt$mappingFolder,index$sampleFolder),showWarnings=FALSE)
+        res = res2 = res3 = 0        
         if(length(index$PE1)) try({
             res<-system(paste("bwa mem",
                          "-M", # Mark shorter split hits as secondary (for Picard compatibility).
@@ -330,13 +331,27 @@ if (opt$mappingAlgorithm == "bowtie"){
         ## reheader
         if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep="."))))
             file.remove(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")))
-        res3 <- system(paste("samtools cat -h", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")), "-o",
-                     file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
-                     ifelse(file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep="."))),
-                            file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),""),
-                     ifelse(file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep="."))),
-                            file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),""),
-                     "2> /dev/null",sep=" "))
+        if (length(index$PE1) & length(index$SE)){
+            res3 <- system(paste("samtools cat -h", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")), "-o",
+                         file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
+                         ifelse(file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep="."))),
+                                file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),""),
+                         ifelse(file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep="."))),
+                                file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),""),
+                         "2> /dev/null",sep=" "))
+        } else if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")))){
+            res3 <- system(paste("samtools reheader", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")),
+                                 file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
+                                 ">", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
+                                 "2> /dev/null",sep=" "))
+        } else if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")))){
+            res3 <- system(paste("samtools reheader", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"header",sep=".")),
+                                 file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),
+                           ">", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),
+                           "2> /dev/null",sep=" "))
+        } else {
+            res3 = 1
+        }
         if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep="."))))
             file.remove(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")))     
         if (file.exists(file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep="."))))
