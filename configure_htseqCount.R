@@ -34,7 +34,7 @@ option_list <- list(
     make_option(c("-a", "--minaqual"), metavar = "MINAQUAL", type="integer", default=10,
                 help="skip all reads with alignment quality lower than the given minimum value [default: %default]",
                 dest="minaqual"),
-    make_option(c("-t", "--type"), metavar = "FEATURETYPE", type="character", default="exon",
+    make_option(c("-y", "--type"), metavar = "FEATURETYPE", type="character", default="exon",
                 help="feature type (3rd column in GFF file) to be used, all features of other type are ignored (default, suitable for Ensembl GTF files: exon)",
                 dest="type"),
     make_option(c("-i", "--idattr"), metavar = "IDATTR", type="character", default="gene_id",
