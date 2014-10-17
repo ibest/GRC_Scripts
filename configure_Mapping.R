@@ -369,16 +369,17 @@ if (opt$mappingAlgorithm == "bowtie"){
 samtools_out <- mclapply(mapping, function(index){
 	dir.create(file.path(opt$mappingFolder,index$sampleFolder))
 	try({
-		system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep=".")),"2> /dev/null",sep=" "));
-		system(paste("samtools index",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),"2> /dev/null",sep=" "));
-		system(paste("samtools idxstats",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"idxstats",sep=".")),"2> /dev/null",sep=" "))
-		system(paste("samtools flagstat",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"flagstat",sep=".")),"2> /dev/null",sep=" "))
+		res <- system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep=".")),"2> /dev/null",sep=" "));
+		res <- res & system(paste("samtools index",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),"2> /dev/null",sep=" "));
+		res <- res & system(paste("samtools idxstats",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"idxstats",sep=".")),"2> /dev/null",sep=" "))
+		res <- res & system(paste("samtools flagstat",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"flagstat",sep=".")),"2> /dev/null",sep=" "))
 		if (opt$sortByReadID) {
-            system(paste("samtools sort -n",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"byreadid",sep=".")),"2> /dev/null",sep=" "));	
+		    res <- res & system(paste("samtools sort -n",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"byreadid",sep=".")),"2> /dev/null",sep=" "));	
 		}
+        return(res)
 	})
 },mc.cores=procs)
-if (!all(sapply(samtools_out, "==", 0L))){
+if (!all(sapply(samtools_out, "==", FALSE))){
     write(paste("Something went wrong with samtools processing some jobs failed"),stderr())
     stop()
 }
