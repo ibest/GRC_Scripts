@@ -35,7 +35,7 @@ parser = OptionParser(usage=usage)
 parser.add_option('-u', '--uncompressed', help="leave output files uncompressed",
                   action="store_true", dest="uncompressed")
 parser.add_option('-o', '--output_base', help="output file basename",
-                  action="store", type="str", dest="output_base",default="screened")
+                  action="store", type="str", dest="output_base",default="extracted")
 parser.add_option('-v', '--verbose', help="verbose output",
                   action="store_false", dest="verbose", default=True)
 
@@ -58,7 +58,7 @@ else:
     insam = sys.stdin
 
 base = options.output_base
-strict = options.strict
+
 
 PE1 = {}
 PE2 = {}
@@ -161,19 +161,6 @@ for line in insam:
                     PE2[ID] = r2
 
 print "Records processed: %s, PE_written: %s, SE_written: %s" % (i, PE_written, SE_written)
-## Finally go through PE1 and PE2, write out any SE reads that might exist:
-# print "Checking for unmatched, paired reads and writing as SE"
-# print "PE1 reads: ", len(PE1)
-# print "PE2 reads: ", len(PE2)
-
-# for k in PE1.keys():
-#     outSE.write("@" + k + '#_1\n')
-#     outSE.write(PE1[k][0] + '\n')
-#     outSE.write('+\n' + PE1[k][1] + '\n')
-# for k in PE2.keys():
-#     outSE.write("@" + k + '#_2\n')
-#     outSE.write(PE2[k][0] + '\n')
-#     outSE.write('+\n' + PE2[k][1] + '\n')
 
 outPE1.close()
 outPE2.close()
