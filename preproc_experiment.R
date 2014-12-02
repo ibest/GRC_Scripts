@@ -19,7 +19,7 @@ option_list <- list(
   make_option(c("-m", "--miniumumLength"), type="integer", default=150,
               help="Discard reads less then minimum length [default %default]",
               dest="minL"),
-  make_option(c("-o", "--overlap"), type="integer", default=450,
+  make_option(c("-o", "--overlap"), type="integer", default=700,
               help="Overlap parameter for flash [default %default]",
               dest="overlap"),
   make_option(c("-O", "--skip-overlap"), action="store_true", default=FALSE,
@@ -75,7 +75,7 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,polyA,folder, sample, i64)
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
-	paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
+	paste("flash --allow-outies --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
 }
 
 link_illumina <- function(se1,se2,r1,r2,o){
