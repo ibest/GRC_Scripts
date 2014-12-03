@@ -19,7 +19,7 @@ option_list <- list(
   make_option(c("-m", "--miniumumLength"), type="integer", default=150,
               help="Discard reads less then minimum length [default %default]",
               dest="minL"),
-  make_option(c("-o", "--overlap"), type="integer", default=275,
+  make_option(c("-o", "--overlap"), type="integer", default=700,
               help="Overlap parameter for flash [default %default]",
               dest="overlap"),
   make_option(c("-O", "--skip-overlap"), action="store_true", default=FALSE,
@@ -29,7 +29,7 @@ option_list <- list(
               help="number of processors to use [default %default]",
               dest="procs"),
   make_option(c("-s", "--skip-duduplicates"), action="store_true", default=FALSE,
-              help="do not perform the deduplication step [default %default] NOT FUNCTIONAL YET",
+              help="do not perform the deduplication step [default %default] ",
               dest="skip_dedup"),
   make_option(c("-c", "--contaminants-folder"), type="character", default=NULL,
               help="folder name with contaminant sequences in fasta format [default %default]",
@@ -37,6 +37,9 @@ option_list <- list(
   make_option(c("-v", "--vector-folder"), type="character", default=NULL,
               help="folder name with vector sequences in fasta format [default %default]",
               dest="vector"),
+  make_option(c("-a", "--polyA"), action="store_true", default=FALSE,
+              help="perform polyA trimming in seqyclean [default %default]",
+              dest="polyA"),
   make_option(c("--i64"), action="store_true",default=FALSE,
               help="input read Q scores are offset by 64 [default %default]",
               dest="i64")
@@ -51,12 +54,12 @@ suppressPackageStartupMessages(library("parallel"))
 ####################################################
 ### FUNCTIONS
 ####################################################
-screen_duplicates <- function(r,o,d){
-  paste("screen_duplicates_PE.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
+screen_duplicates <- function(r,o,d,s){
+  paste("screen_duplicates_PE.py",ifelse(s,"-s",""),"-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 #  paste("screen_duplicates_PE_sra.py","-d", r, "-o", o, ">>", file.path(d,"preprocessing_output.txt"), sep=" ")
 }
 
-seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample, i64) {
+seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,polyA,folder, sample, i64) {
   i64_param = ""
   if (i64){
    i64_param="-i64"
@@ -68,11 +71,12 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,folder, sample, i64) {
   if(file.exists(file.path(folder,"vector.fa"))){
     vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean --ow -qual", q, q, i64_param, vc_param,"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
+	paste("seqyclean --ow -qual", q, q, i64_param, vc_param,ifelse(polyA,"-polyat",""),"-minimum_read_length",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
-	paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
+#	paste("flash --allow-outies --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
+    paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
 }
 
 link_illumina <- function(se1,se2,r1,r2,o){
@@ -89,12 +93,12 @@ link_illumina <- function(se1,se2,r1,r2,o){
   } else{
     se = se1
   }
-  output <- paste("ln -sf",file.path("../..",se),paste(o,"merged_SE.fastq",sep="_"),";","ln -sf",file.path("../..",r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","ln -sf",file.path("../..",r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
+  output <- paste("mv -f",file.path(se),paste(o,"merged_SE.fastq",sep="_"),";","mv -f",file.path(r1),paste(o,"notcombined_PE1.fastq",sep="_"),";","mv -f",file.path(r2),paste(o,"notcombined_PE2.fastq",sep="_"),";",sep=" ")
   output
 }
 
 
-seqyclean_454 <- function(sff,o,minL=225,q=24,folder,sample){
+seqyclean_454 <- function(sff,o,minL=225,q=24,polyA,folder,sample){
     vc_param = ""
   if(file.exists(file.path(folder,"contaminants.fa"))){
     vc_param=paste(vc_param,"-c",file.path(getwd(),folder,"contaminants.fa"),sep=" ")
@@ -102,10 +106,10 @@ seqyclean_454 <- function(sff,o,minL=225,q=24,folder,sample){
   if(file.exists(file.path(folder,"vector.fa"))){
     vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean -qual",q,q,vc_param,"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
+	paste("seqyclean -qual",q,q,vc_param,ifelse(polyA,"-polyat",""),"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
 }
 link_454 <- function(sff,o){
-	paste("ln -sf",sff,paste(o,"sff",sep="."),sep=" ")
+	paste("mv -f",sff,paste(o,"sff",sep="."),sep=" ")
 }
 
 final_report_fun <- function(f,o){
@@ -126,16 +130,20 @@ get_phiX <- function(){
 #qual <- opt$qual
 #minL <- 120
 #overlap <- opt$overlap
-process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,minL,overlap,noOverlap,i64){
+process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qual,polyA,minL,overlap,noOverlap,i64,skipd){
   write(paste(sample,":Processing folder ",folder,sep=""),stdout())
   if(file.info(file.path(Raw_Folder,folder))$isdir){ ## ILLUMINA FOLDER, EXPECT PAIRED READS
     
     if(!file.exists(file.path(Clean_Folder, sample))) dir.create(file.path(Clean_Folder, sample),recursive=TRUE,showWarnings=FALSE)
     
     output <- file.path(Clean_Folder,sample,paste(sample,sep="_"))
-    write(paste(sample,":\tde-duplicating reads",sep=""),stdout())
+    if (skipd){
+        write(paste(sample,":\tmerging any reads in RawData",sep=""),stdout())
+    }else{
+        write(paste(sample,":\tde-duplicating reads",sep=""),stdout())        
+    }
 
-    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample)))
+    system(screen_duplicates(file.path(Raw_Folder,folder),output,file.path(Clean_Folder,sample),skipd))
 
     ## second use seqyclean to remove contaminant, adapters and trim for quality
     Read1 <- paste(output,"nodup_PE1.fastq.gz",sep="_")
@@ -143,7 +151,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     output <- file.path(Clean_Folder,sample,paste(sample,"nodup",paste("q",qual,"min",minL,sep=""),sep="_"))
     write(paste(sample,":\trunning seqyclean",sep=""),stdout())
 
-    seqyclean_cmd <- seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, Clean_Folder, sample, i64)
+    seqyclean_cmd <- seqyclean_illumina(Read1, Read2, output, minL=minL, q=qual, polyA,Clean_Folder, sample, i64)
     system(seqyclean_cmd)
 
     ## third use flash to join overlapping paired-end reads
@@ -166,7 +174,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     output <- file.path(getwd(),Final_Folder,sample,sample)
     
     if(!file.exists(file.path(Final_Folder, sample))) dir.create(file.path(Final_Folder,sample),recursive=TRUE,showWarnings=FALSE)
-    write(paste(sample,":\tcreating links to final files in ",file.path(Final_Folder,sample),sep=""),stdout())
+    write(paste(sample,":\tMoving final files to ",file.path(Final_Folder,sample),sep=""),stdout())
     system(link_illumina(SE1,SE2,Read1,Read2,output))
     write(paste(sample,":\tFinished",sep=""),stdout())
 
@@ -178,7 +186,7 @@ process_sample <- function(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,qu
     SFF <- file.path(Raw_Folder,folder)
     folder <- sub(".sff","",folder)
     output <- file.path(getwd(),Clean_Folder,sample,paste(sample,paste("q",qual454,"min",minL454,sep=""),sep="_"))
-    seqyclean_cmd <- seqyclean_454(SFF,output,minL=minL454,q=qual454,Clean_Folder, sample)    
+    seqyclean_cmd <- seqyclean_454(SFF,output,minL=minL454,q=qual454,polyA,Clean_Folder, sample)    
     write(paste(sample,":\trunning 454 seqyclean",sep=""),stdout())
     system(seqyclean_cmd)
     SFF <- paste(output,"sff",sep=".")
@@ -264,7 +272,7 @@ write(paste("samples sheet contains", nrow(targets), "samples to process",sep=" 
 mclapply(seq.int(1,nrow(targets)), function(index){
   folder <- targets$SEQUENCE_ID[index]
   sample <- targets$SAMPLE_ID[index]
-  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$minL,opt$overlap,opt$noOverlap,opt$i64)})
+  try({process_sample(folder,sample,Raw_Folder,Clean_Folder,Final_Folder,opt$qual,opt$polyA,opt$minL,opt$overlap,opt$noOverlap,opt$i64,opt$skip_dedup)})
   write(paste(sample,":\tcreating report of final files in ",file.path(Final_Folder,sample),sep=""),stdout())
   try({system(final_report_fun(file.path(Final_Folder,sample),file.path(Clean_Folder,sample)))})
 },mc.cores=opt$procs)
@@ -272,9 +280,9 @@ mclapply(seq.int(1,nrow(targets)), function(index){
 
 ##########################################
 ### Generate Read Report
-#write(paste("Generating Final Preprocessing Report for all samples",sep=" "),stdout())
+write(paste("Generating Final Preprocessing Report for all samples",sep=" "),stdout())
 
-#system(paste("preproc_report -f", opt$samplesFile))
+system(paste("preproc_report -f", opt$samplesFile,"-c",Clean_Folder,"-d",Final_Folder,sep=" "))
 
-#write("Finished processing samples",stdout())
+write("Finished processing samples",stdout())
 

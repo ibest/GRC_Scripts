@@ -3,39 +3,35 @@
 '''
 Extract reads which aren't mapped from a SAM or SAM.gz file.
 Behavior for PE:
-    -Write out PE only if both do not map (if either of the pair maps, neither is retained)
-    -The logic on the FLAG bit looks like this:
-    write if: (flag & 0x1 == 1) and (flag & 0x4 == 1) and (flag & 0x8 == 1)
+  -Write out PE only if both do not map (if either of the pair maps, neither is retained)
 Behavior for SE:
-    -Write out SE if they don't map
-    -The logic on the FLAG bit looks like this:
-    write if (flag & 0x1 == 0) and (flag & 0x4 == 1)
+  -Write out SE if they don't map
 
 Iterate over a SAM or SAM.gz file. take everything where the 3rd and
 4th flag bit are set to 1 and write reads out to files.
 
-    0x1 template having multiple segments in sequencing
-    0x2 each segment properly aligned according to the aligner
-    0x4 segment unmapped
-    0x8 next segment in the template unmapped
-    0x10 SEQ being reverse complemented
-    0x20 SEQ of the next segment in the template being reversed
-    0x40 the first segment in the template
-    0x80 the last segment in the template
-    0x100 secondary alignment
-    0x200 not passing quality controls
-    0x400 PCR or optical duplicate
+0x1 template having multiple segments in sequencing
+0x2 each segment properly aligned according to the aligner
+0x4 segment unmapped
+0x8 next segment in the template unmapped
+0x10 SEQ being reverse complemented
+0x20 SEQ of the next segment in the template being reversed
+0x40 the first segment in the template
+0x80 the last segment in the template
+0x100 secondary alignment
+0x200 not passing quality controls
+0x400 PCR or optical duplicate
 
 TODO:
-    1) Add support for retaining both reads if one of a pair don't map but the other does
-    2) Add support for retaining the pair (or SE) if a read maps with low mapq
+1) Add support for retaining both reads if one of a pair don't map but the other does
+2) Add support for retaining the pair (or SE) if a read maps with low mapq
 
 Note:
-    It is necessary to double check that both pairs of the PE read really exist in the SAM
-    file just in case it somehow gets disordered. This is taken care of by keeping the PE
-    reads in a set of dictionaries and then deleting them once the pair is written.
-    In the case where a read is somehow labeled as paired, but the pair doesn't exist, the
-    read is NOT written.
+  It is necessary to double check that both pairs of the PE read really exist in the SAM
+file just in case it somehow gets disordered. This is taken care of by keeping the PE
+reads in a set of dictionaries and then deleting them once the pair is written.
+In the case where a read is somehow labeled as paired, but the pair doesn't exist, the
+read is NOT written.
 '''
 import sys
 import os
@@ -43,32 +39,36 @@ from optparse import OptionParser  # http://docs.python.org/library/optparse.htm
 import gzip
 
 
-usage = "usage: %prog [options] inputfile.SAM output_base"
+usage = "usage: %prog [options] -o output_base inputfile.SAM"
 parser = OptionParser(usage=usage)
 parser.add_option('-u', '--uncompressed', help="leave output files uncompressed",
                   action="store_true", dest="uncompressed")
+parser.add_option('-o', '--output_base', help="output file basename",
+                  action="store", type="str", dest="output_base",default="screened")
+parser.add_option('-v', '--verbose', help="verbose output",
+                  action="store_false", dest="verbose", default=True)
 
 (options,  args) = parser.parse_args()  # uncomment this line for command line support
 
-if len(args) < 2:
-    parser.print_help()
-    sys.exit()
+if len(args) == 1:
+    infile = args[0]
+        #Start opening input/output files:
+    if not os.path.exists(infile):
+        print "Error, can't find input file %s" % infile
+        sys.exit()
 
-infile = args[0]
-base = args[1]
+    if infile.split(".")[-1] == "gz":
+        insam = gzip.open(infile, 'rb')
+    else:
+        insam = open(infile, 'r')
+else:
+    ## reading from stdin
+    insam = sys.stdin
+
+base = options.output_base
 
 PE1 = {}
 PE2 = {}
-
-#Start opening input/output files:
-if not os.path.exists(infile):
-    print "Error, can't find input file %s" % infile
-    sys.exit()
-
-if infile.split(".")[-1] == "gz":
-    insam = gzip.open(infile, 'rb')
-else:
-    insam = open(infile, 'r')
 
 if options.uncompressed:
     outPE1 = open(base + "_PE1.fastq", 'w')
@@ -94,7 +94,7 @@ i = 0
 PE_written = 0
 SE_written = 0
 for line in insam:
-    if i % 100000 == 0 and i > 0:
+    if i % 100000 == 0 and i > 0 and options.verbose:
         print "Records processed: %s, PE_written: %s, SE_written: %s" % (i, PE_written, SE_written)
         #print "\t Unwritten: PE1 reads ", len(PE1), "PE2 reads: ", len(PE2)
         #print "\t Written: %s" % PE_written
@@ -118,9 +118,7 @@ for line in insam:
             continue
 
         #Handle PE:
-        #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped
-        # which means (is paired, and this segment is unmapped and the next segment is unmapped)
-        #if ((flag & 0x1) == 1 and (flag & 0x4) != 0 and flag & 0x8 != 0):
+        #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped, 0x80 the last segment in the template
         if ((flag & 0x1) and (flag & 0x4) and (flag & 0x8)):
             if (flag & 0x40):  # is this PE1 (first segment in template)
                 #PE1 read, check that PE2 is in dict and write out

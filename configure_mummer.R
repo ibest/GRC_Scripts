@@ -18,9 +18,12 @@ option_list <- list(
               dest="contigFolder"),
   make_option(c('-C', "--contigFileName"), type="character", default="454LargeContigs.fna",
               help="Name of file containing contigs [default %default]", dest="contigFileName"),
-  make_option(c("a", "--isArc"),  action="store_true", default=FALSE,
+  make_option(c("-a", "--isArc"),  action="store_true", default=FALSE,
                 help="is the folder an ARC folder [default %default]",
                 dest="isARC"),
+  make_option(c("-o", "--reorient"),  action="store_true", default=FALSE,
+              help="If the contig aligns to the reverse strand reorient contig [default %default]",
+              dest="reorient"),
   make_option(c("-m", "--MummerFolder"), type="character", default="04-Mummer",
               help="Directory where to store the mummer results [default %default]",
               dest="mummerFolder"),
@@ -109,11 +112,11 @@ dir.create(opt$mummerFolder,showWarnings=FALSE,recursive=TRUE)
     for( i in length(targets_list) ) {
       if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
         if (!file.exists(targets_list[[i]][2])){
-          write(paste("Targets file (",targets_list[[i]][2],") does not exist"))
+          write(paste("Targets file (",targets_list[[i]][2],") does not exist\n"),stderr())
           stop()
         }
       } else{
-        write(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"))
+        write(paste("Targets file (",targets_list[[i]][2],") is not a fasta, fa or fna file"),stderr())
         stop()        
       }
     }
@@ -163,7 +166,7 @@ mummer_out <- mclapply(mummer, function(index){
 },mc.cores=floor(procs))
 
 
-parse_mummerFiles <- function(file){
+parse_mummerFiles <- function(file,reorient=TRUE){
   lines <- readLines(file)
   # remove extra whitespace
   lines <- gsub("\\s+$|^\\s+", "", lines)
@@ -215,6 +218,7 @@ parse_mummerFiles <- function(file){
   tb$"QUERY LENGTH" <- df[match(tb$QUERY,df[,1]),2]
   ### Big dumb rule of 10%
   tb <- tb[tb[["QUERY COVERAGE"]] >= 0.1,]
+  if (nrow(tb) == 0)  return(data.frame()) 
   tb$BREAK = NA
   df.tmp <- df2[match(paste(tb$QUERY,tb$ORIENTATION),paste(df2$query_name,df2$orient)),]
   tb$REF_POS = df.tmp$pos_ref
@@ -235,17 +239,21 @@ parse_mummerFiles <- function(file){
 
 mummertb <- sapply(mummer, function(index)
   if (!mummer_out[[index$sampleFolder]]){
-#    cat(index$sampleFolder,"\n")
-    pmummer <- parse_mummerFiles(file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep=".")))
+    cat(index$sampleFolder,"\n")
+    f = file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer",sep="."))
+    pmummer <- parse_mummerFiles(f)
     df <- pmummer$df
     write.table(df,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"mummer.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
     tb <- pmummer$tb
-    if (length(tb) > 0){
-      write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
-      fa <- readDNAStringSet(index$filename)
-      nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
-      tb <- tb[match(nms,tb$QUERY),]
-      names(fa) <- paste(tb$REF,index$sampleFolder,names(fa),sep="-")
+    if (length(tb) > 0){ 
+        write.table(tb,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"target.txt",sep=".")),sep="\t",row.names=F,col.names=T,quote=F)
+        fa <- readDNAStringSet(index$filename)
+        nms <- sapply(strsplit(names(fa),split=" "),"[[",1L)
+        fa <- fa[match(tb$QUERY,nms)]
+        #tb <- tb[match(nms,tb$QUERY),]
+        names(fa) <- paste(tb$REF,index$sampleFolder,names(fa),sep="-")
+      if (opt$reorient)
+          fa[tb$ORIENTATION == "-"] <- reverseComplement(fa[tb$ORIENTATION == "-"])
       targets$combined= NULL
       if (all(sapply(targets,length) == 3)){
         keep <- as.logical(sapply(targets,"[[",3L)[match(tb$REF,sapply(targets,"[[",1L))])
@@ -255,16 +263,37 @@ mummertb <- sapply(mummer, function(index)
       }
       for (i in seq.int(1,length(fa))){
         if (!is.na(tb[i,"BREAK"])){
-          fa2 <- subseq(fa[i],as.numeric(tb[i,"BREAK"]))
-          fa[i] <- subseq(fa[i],1, as.numeric(tb[i,"BREAK"])-1)
-          nms <- sapply(strsplit(names(fa[i]),split=" "),"[[",1L)
-          names(fa)[i] <- paste(nms,".1 SPLIT_CONTIG REGION 1",sep="")
-          names(fa2) <- paste(nms,".2 SPLIT_CONTIG REGION 2",sep="")
-          fa <- c(fa,fa2)
-        }
+            fa2 <- subseq(fa[i],as.numeric(tb[i,"BREAK"]))
+            fa[i] <- subseq(fa[i],1, as.numeric(tb[i,"BREAK"])-1)
+            nms <- sapply(strsplit(names(fa[i]),split=" "),"[[",1L)
+            names(fa)[i] <- paste(nms,".1 SPLIT_CONTIG REGION 1",sep="")
+            names(fa2) <- paste(nms,".2 SPLIT_CONTIG REGION 2",sep="")
+            fa <- c(fa,fa2)
+        } #else {
+#             vmp <- start(vmatchPattern("GTTAATGTAG",fa))
+#             vmp <-  vmp[sapply(vmp,length) > 0]
+#             vmp <- vmp[sapply(vmp,function(x) x != 1)]
+#             if (length(vmp) > 0){
+#                 fa2 <- subseq(fa[names(vmp)],unlist(vmp))
+#                 fa[names(vmp)] <- subseq(fa[names(vmp)],1, unlist(vmp)-1)
+#                 nms <- sapply(strsplit(names(fa[names(vmp)]),split=" "),"[[",1L)
+#                 names(fa[names(vmp)]) <- paste(nms,".1 SPLIT_CONTIG REGION 1",sep="")
+#                 names(fa2) <- paste(nms,".2 SPLIT_CONTIG REGION 2",sep="")
+#                 fa <- c(fa,fa2)
+#             }
+#         }
       }
       fa <- fa[order(names(fa))]
-      writeXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))    
-    }
+          
+      writeXStringSet(fa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep=".")))
+## cap3 the result
+#       grab <- system(paste("cap3",file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"screened.fasta",sep="."))),intern = TRUE)
+#       newfa <- readDNAStringSet(c(file.path(opt$mummerFolder, index$sampleFolder,paste(index$sampleFolder,"screened.fasta.cap.contigs",sep=".")),
+#                                   file.path(opt$mummerFolder, index$sampleFolder,paste(index$sampleFolder,"screened.fasta.cap.singlets",sep="."))))
+#       if (length(newfa) ==1 & subseq(newfa[1],1,7) == "GGGTGGG") newfa <- reverseComplement(newfa)
+#       names(newfa) <- paste(sapply(strsplit(index$sampleFolder,split="_"),"[[",2L),"Contig",seq.int(1,length(newfa)),sep="_")
+#       writeXStringSet(newfa,file.path(opt$mummerFolder,index$sampleFolder,paste(index$sampleFolder,"final.fasta",sep=".")))
+#       cat(paste(length(newfa),"final contig(s)\n"))
+  }
 })
 

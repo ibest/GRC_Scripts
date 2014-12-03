@@ -54,7 +54,6 @@ if [ $se = "-" ] ; then # expect paired end reads
 else
       suffix=" -U $se"
 fi
-
 source /usr/modules/init/bash
 module load bowtie2 grc
 
@@ -67,4 +66,3 @@ $bt_command $suffix | samtools view -bS - > btout.bam
 if [ -f phiX.bowtie2_tmp_index ] ; then rm phiX.tmp.fasta phiX.bowtie2_tmp_index.* phiX.bowtie2_tmp_index; fi
 
 exit 0
-

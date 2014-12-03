@@ -40,7 +40,7 @@ option_list <- list(
   make_option(c("-g", "--gzip_extracted"), action="store_true", default=FALSE,
               help="gzip extracted read fastq files [default %default]",
               dest="gzip_extracted"),
-  make_option(c("-e", "--extractFolder"), type="character", default="03-Extracted",
+  make_option(c("-e", "--extractFolder"), type="character", default="04-Extracted",
               help="if extractUnmapped, and/or extractMapped is TRUE, save resulting fastq to this folder [default %default]",
               dest="screenFolder"),
   make_option(c("-l", "--localmode"), action="store_true", default=FALSE,
@@ -117,33 +117,33 @@ suppressPackageStartupMessages(library("parallel"))
 ## Parameters
 ##  targets: filename of bowtie2 build, fasta file or text file with multiple targets
 "prepareTargets" <- function(targets){
-  if (file.exists(paste(targets,"1.bt2",sep="."))){
+  if (file.exists(paste(targets,"rev.2.bt2",sep="."))){
     ### single target, bowtie2 build exists
     targets_list <- list(c(basename(targets),targets))
-  } else if(file_ext(targets) %in% c("fasta","fa")){
+  } else if(file_ext(targets) %in% c("fasta","fa","fna")){
     ### single target, need to buld bowtie2 build
-    if (!file.exists(paste(sub(".fasta$|.fa$","",targets),"1.bt2",sep="."))){
+    if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"1.bt2",sep="."))){
       if (!file.exists(targets)){
         write(paste("Targets file (",targets,") does not exist"))
       }
       write(paste("Preparing bowtie2 indexes for:",targets,"\n"),stdout())
-      system(paste("bowtie2-build",targets,sub(".fasta$|.fa$","",targets)))      
+      system(paste("bowtie2-build",targets,sub(".fasta$|.fa$|.fna$","",targets)))      
     }
-    targets_list <- list(c(sub(".fasta$|.fa$","",basename(targets)),sub(".fasta$|.fa$","",targets)))
+    targets_list <- list(c(sub(".fasta$|.fa$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))
   } else if (file.exists(targets)){
     ### multiple targets
     targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
-    if (!all(sapply(targets_list,length) == 2)) {
-      write("Some targets are malformed, this script requires 2 columns (tab separated) per line\n",stderr())
-      stop()
-    }
-    for( i in length(targets_list) ) {
-      if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa")){
-        if (!file.exists(paste(sub(".fasta$|.fa$","",targets_list[[i]][2]),"1.bt2",sep="."))){
+#    if (!all(sapply(targets_list,length) == 2)) {
+#      write("Some targets are malformed, this script requires 2 columns (tab separated) per line\n",stderr())
+#      stop()
+#    }
+    for( i in seq.int(length(targets_list)) ) {
+      if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
+        if (!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"rev.2.bt2",sep="."))){
           write(paste("Preparing bowtie2 indexes for:",targets_list[[i]][2],"\n"),stdout())
-          system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$","",targets_list[[i]][2])))
+          system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])),ignore.stdout = TRUE, ignore.stderr = TRUE)
         }
-        targets_list[[i]][2] <- sub(".fasta$|.fa$","",targets_list[[i]][2])
+        targets_list[[i]][2] <- sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])
       }
     }
   } else {
@@ -232,7 +232,9 @@ samtools_out <- mclapply(bowtie, function(index){
 #####################################################
 ## write out index tables
 targetTables <- sapply(targets,function(tgt){
-  filesToRead <- unlist(sapply(file.path(opt$bowtieFolder,unique(samples[,opt$samplesColumn])),dir,pattern=paste(tgt[1],"idxstats",sep="."),full.names=TRUE))
+  print(paste("Generating output for target:",tgt[1]))
+  filesToRead <- unlist(sapply(unique(samples[,opt$samplesColumn]),function(x) file.path(opt$bowtieFolder,x,paste(x,tgt[1],"idxstats",sep="."))))
+#  filesToRead <- unlist(sapply(file.path(opt$bowtieFolder,unique(samples[,opt$samplesColumn])),dir,pattern=paste(tgt[1],"idxstats",sep="."),full.names=TRUE))
   info <- read.table(filesToRead[1])[,1:2]
   colnames(info) <- c("SequenceID","SequenceLength")
   data <- sapply(filesToRead,function(file){
@@ -249,6 +251,7 @@ targetTables <- sapply(targets,function(tgt){
   names(pmapped) <- colnames(freq)
   round(pmapped,3)
 })
+
 targetTables <- data.frame(targetTables)
 colnames(targetTables) <- sapply(targets,"[[",1L)
 
@@ -263,8 +266,7 @@ if (opt$extract_unmapped){## Extract Unmapped Reads
   extract_out <- mclapply(bowtie, function(index){
     try({
         dir.create(file.path(opt$screenFolder,index$sampleFolder));
-        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "),intern=TRUE);
-        #print(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads2.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "));
+        system(paste("samtools view",file.path(opt$bowtieFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "| extract_unmapped_reads.py",ifelse(opt$gzip_extracted,"","-u"),"-v -o",file.path(opt$screenFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"unmapped",sep=".")),sep=" "),intern=TRUE);
     })
   },mc.cores=procs/2)
   extract_out <- strsplit(sapply(extract_out,tail,n=1),split=": |,")
