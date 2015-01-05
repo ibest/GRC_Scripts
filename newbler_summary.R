@@ -113,7 +113,7 @@ newblertb <- sapply(samples[,opt$samplesColumn], function(newb){
                             pfile$consensusResults$readStatus$numberRepeat,
                             pfile$consensusResults$readStatus$numberOutlier,
                             pfile$consensusResults$readStatus$numberTooShort)
-    rstatus <- as.numeric(sapply(strsplit(rstatus,split=" "),"[[",1L))
+    rstatus <- as.numeric(sapply(strsplit(rstatus,split=" |, "),"[[",1L))    
     passembled <- (sum(rstatus[0:1])/areads[1])*100
     largecontigs <- as.numeric(c(pfile$consensusResults$largeContigMetrics$numberOfContigs,
                                  pfile$consensusResults$largeContigMetrics$numberOfBases,
@@ -122,7 +122,7 @@ newblertb <- sapply(samples[,opt$samplesColumn], function(newb){
                                  pfile$consensusResults$largeContigMetrics$largestContigSize,
                                  unlist(strsplit(gsub("%","",pfile$consensusResults$largeContigMetrics$Q40PlusBases),split=" *, *"))))
     allcontigs <- as.numeric(c(pfile$consensusResults$allContigMetrics$numberOfContigs,pfile$consensusResults$allContigMetrics$numberOfBases))
-    ndata <- c(areads,abases,rstatus,passembled,largecontigs,allcontigs,cov)
+    ndata <- c(areads[1:3],abases[1:3],rstatus,passembled,largecontigs,allcontigs,cov)
     names(ndata) <- c("totalNumberOfReads","numAlignedReads","numAlignedReadsPercent",
                       "totalNumberOfBases","numAlignedBases","numAlignedReadsBases",
                       "numberAssembled","numberPartial","numberSingleton","numberRepeat","numberOutlier","numberTooShart","assembledPercent",
