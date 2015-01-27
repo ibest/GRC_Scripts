@@ -113,7 +113,9 @@ newblertb <- sapply(samples[,opt$samplesColumn], function(newb){
                             pfile$consensusResults$readStatus$numberRepeat,
                             pfile$consensusResults$readStatus$numberOutlier,
                             pfile$consensusResults$readStatus$numberTooShort)
+
     rstatus <- as.numeric(sapply(strsplit(rstatus,split=" |, "),"[[",1L))    
+
     passembled <- (sum(rstatus[0:1])/areads[1])*100
     largecontigs <- as.numeric(c(pfile$consensusResults$largeContigMetrics$numberOfContigs,
                                  pfile$consensusResults$largeContigMetrics$numberOfBases,
