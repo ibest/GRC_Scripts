@@ -37,7 +37,8 @@ report_fun <- function(d,f){
 
   flash_data = rep(NA,4)
   if(length(oflash <- which(output=="[FLASH] Read combination statistics:")) != 0){
-    flash_res <- output[(oflash+1):(oflash+4)]
+  	oflash = tail(oflash,1)
+    flash_res <- output[c((oflash+1),(oflash+2),(oflash+5),(oflash+6))]
     flash_data <- as.numeric(sapply(strsplit(flash_res,split=" +|%"),"[[",4L))
     #  names(flash_data) <- c("Paired_Reads","Reads_Combined","Reads_Uncombined","Combined_Percentage")
   }
