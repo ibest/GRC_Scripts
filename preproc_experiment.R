@@ -109,7 +109,7 @@ seqyclean_454 <- function(sff,o,minL=225,q=24,polyA,folder,sample){
   if(file.exists(file.path(folder,"vector.fa"))){
     vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean -qual",q,q,vc_param,ifelse(polyA,"-polyat",""),"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
+	paste("seqyclean -qual_only -qual",q,q,vc_param,ifelse(polyA,"-polyat",""),"-minimum_read_length",minL,"-454",sff,"-o",o, ">>", file.path(folder,sample,"preprocessing_output_454.txt"),sep=" ")
 }
 link_454 <- function(sff,o){
 	paste("mv -f",sff,paste(o,"sff",sep="."),sep=" ")
