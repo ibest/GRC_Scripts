@@ -78,6 +78,11 @@ parser.add_option('-o', '--output', help="Directory + prefix to output de-duplic
 parser.add_option('-s', '--skip_dup', help="Skip de-dupping, merge files only and format for further processing in seqyclean",
                   action="store_true", dest="skip",default=False)
 
+parser.add_option('-a', '--sra', help="Data was downloaded from the SRA, requires ID's to be rewritten",
+                  action="store_true", dest="sra",default=False)
+
+
+
 
 (options, args) = parser.parse_args()
 
@@ -146,6 +151,9 @@ def main(infile1, infile2, outfile1, outfile2,skip):
                     count[comb] += 1
                     c = count[comb]
                 if c == 1:
+                    if options.sra: ## modify read id adding in index of read and pair information needed
+                        seq1['id'] = "@HWI-"+i+":0:0:0:0:0:0 1:Y:0:"
+                        seq2['id'] = "@HWI-"+i+":0:0:0:0:0:0 2:Y:0:"
                     writeFastq(outfile1, seq1)
                     writeFastq(outfile2, seq2)
                 else:
