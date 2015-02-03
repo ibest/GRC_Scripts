@@ -203,7 +203,7 @@ targets <- loadDataFile(samples, opt$mappingFolder,opt$samplesColumn,raw=NA)
         targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
         #	 Assume first column is name, second is the fasta file, remaining columns are ignored
         for( i in seq.int(length(targets_list)) ) {
-            if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
+            if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna") & !is.na(algorithm)){                
                 if (!file.exists(targets_list[[i]][2])){
                     write(paste("Targets file (",targets_list[[i]][2],") does not exist"), stderr())
                     stop("Quiting")
