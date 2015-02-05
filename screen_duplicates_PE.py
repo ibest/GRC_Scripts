@@ -136,8 +136,8 @@ def main(infile1, infile2, outfile1, outfile2,skip):
                 c = count[comb]
                 if c == 1:
                     if options.sra: ## modify read id adding in index of read and pair information needed
-                        seq1['id'] = "@HWI-"+i+":0:0:0:0:0:0 1:Y:0:"
-                        seq2['id'] = "@HWI-"+i+":0:0:0:0:0:0 2:Y:0:"
+                        seq1['id'] = "@HWI-"+str(i)+":0:0:0:0:0:0 1:Y:0:"
+                        seq2['id'] = "@HWI-"+str(i)+":0:0:0:0:0:0 2:Y:0:"
                     writeFastq(outfile1, seq1)
                     writeFastq(outfile2, seq2)
                 else:
