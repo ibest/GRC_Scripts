@@ -74,7 +74,7 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,polyA,folder, sample, i64)
   if(file.exists(file.path(folder,"vector.fa"))){
     vc_param=paste(vc_param,"-v",file.path(getwd(),folder,"vector.fa"),sep=" ")
   }
-	paste("seqyclean -qual_only -ow -qual", q, q, i64_param, vc_param,ifelse(polyA,"-polyat",""),"-minlen",minL,"--new2old_illumina -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
+	paste("seqyclean -qual_only -ow -qual", q, q, i64_param, vc_param,ifelse(polyA,"-polyat",""),"-minlen",minL,"-new2old -1",r1,"-2",r2,"-o",o, ">>", file.path(folder,sample,"preprocessing_output.txt"),sep=" ")
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
