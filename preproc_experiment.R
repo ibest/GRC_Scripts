@@ -80,7 +80,7 @@ seqyclean_illumina <- function(r1,r2,o,minL=150, q=24,polyA,folder, sample, i64)
 }
 
 join_reads <- function(r1,r2,o,overlap=275,d){
-	paste("flash2 --allow-outies --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
+	paste("flash --allow-outies --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
 #    paste("flash --max-overlap=",overlap," --output-prefix=",o," ",r1," ",r2, " >> ", file.path(d,"preprocessing_output.txt"),sep="")
 }
 
