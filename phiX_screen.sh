@@ -10,13 +10,13 @@ pe2=NA
 se="-"
 
 
-while getopts "h?t:1:2:U:" opt; do
+while getopts "h?t:o:1:2:U:" opt; do
     case "$opt" in
     h|\?)
         echo "there is no help"
         exit 0
         ;;
-    v)  threads=$OPTARG
+    t)  threads=$OPTARG
         ;;
     o)  output=$OPTARG
         ;;

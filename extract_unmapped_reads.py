@@ -70,16 +70,6 @@ base = options.output_base
 PE1 = {}
 PE2 = {}
 
-if options.uncompressed:
-    outPE1 = open(base + "_PE1.fastq", 'w')
-    outPE2 = open(base + "_PE2.fastq", 'w')
-    outSE = open(base + "_SE.fastq", 'w')
-else:
-    outPE1 = gzip.open(base + "_PE1.fastq.gz", 'wb')
-    outPE2 = gzip.open(base + "_PE2.fastq.gz", 'wb')
-    outSE = gzip.open(base + "_SE.fastq.gz", 'wb')
-
-
 def writeread(ID, r1, r2):
     #read1
     outPE1.write("@" + ID + "#0/1" '\n')
@@ -93,6 +83,8 @@ def writeread(ID, r1, r2):
 i = 0
 PE_written = 0
 SE_written = 0
+SE_open = False
+PE_open = False
 for line in insam:
     if i % 100000 == 0 and i > 0 and options.verbose:
         print "Records processed: %s, PE_written: %s, SE_written: %s" % (i, PE_written, SE_written)
@@ -111,6 +103,12 @@ for line in insam:
         # unapped SE reads have 0x1 set to 0, and 0x4 (third bit) set to 1
         if (flag & 0x1 == 0) and (flag & 0x4):
             ID = line2[0].split("#")[0]
+            if not SE_open:
+                if options.uncompressed:
+                    outSE = open(base + "_SE.fastq", 'w')
+                else:
+                    outSE = gzip.open(base + "_SE.fastq.gz", 'wb')
+                SE_open = True
             outSE.write("@" + ID + '\n')
             outSE.write(line2[9] + '\n')
             outSE.write('+\n' + line2[10] + '\n')
@@ -120,6 +118,14 @@ for line in insam:
         #Handle PE:
         #logic:  0x1 = multiple segments in sequencing,   0x4 = segment unmapped,  0x8 = next segment unmapped, 0x80 the last segment in the template
         if ((flag & 0x1) and (flag & 0x4) and (flag & 0x8)):
+            if not PE_open:
+                if options.uncompressed:
+                    outPE1 = open(base + "_PE1.fastq", 'w')
+                    outPE2 = open(base + "_PE2.fastq", 'w')
+                else:
+                    outPE1 = gzip.open(base + "_PE1.fastq.gz", 'wb')
+                outPE2 = gzip.open(base + "_PE2.fastq.gz", 'wb')
+                PE_open = True
             if (flag & 0x40):  # is this PE1 (first segment in template)
                 #PE1 read, check that PE2 is in dict and write out
                 ID = line2[0].split("#")[0]
