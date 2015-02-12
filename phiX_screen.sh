@@ -62,7 +62,7 @@ module load bowtie2 grc/2.0
 #echo "The command:"
 #echo "$bt_command $suffix | samtools view -bS "
 #$bt_command $suffix | samtools view -bS - > btout.bam
-$bt_command $suffix | extract_unmapped_reads.py -o $output_noContaminant
+$bt_command $suffix | extract_unmapped_reads.py -o "$output_noContaminant"
 
 # clean up
 if [ -f phiX.bowtie2_tmp_index ] ; then rm phiX.tmp.fasta phiX.bowtie2_tmp_index.* phiX.bowtie2_tmp_index; fi
