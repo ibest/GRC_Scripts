@@ -18,6 +18,8 @@ while getopts "h?t:1:2:U:" opt; do
         ;;
     v)  threads=$OPTARG
         ;;
+    o)  output=$OPTARG
+        ;;
     1)  pe1=$OPTARG
         ;;
     2)  pe2=$OPTARG
@@ -55,12 +57,12 @@ else
       suffix=" -U $se"
 fi
 source /usr/modules/init/bash
-module load bowtie2 grc
+module load bowtie2 grc/2.0
 
 #echo "The command:"
 #echo "$bt_command $suffix | samtools view -bS "
-$bt_command $suffix | samtools view -bS - > btout.bam
-
+#$bt_command $suffix | samtools view -bS - > btout.bam
+$bt_command $suffix | extract_unmapped_reads.py -o $output_noContaminant
 
 # clean up
 if [ -f phiX.bowtie2_tmp_index ] ; then rm phiX.tmp.fasta phiX.bowtie2_tmp_index.* phiX.bowtie2_tmp_index; fi
