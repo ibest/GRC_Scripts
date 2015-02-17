@@ -162,6 +162,8 @@ print "Records processed: %s, PE_written: %s, SE_written: %s" % (i, PE_written, 
 #     outSE.write(PE2[k][0] + '\n')
 #     outSE.write('+\n' + PE2[k][1] + '\n')
 
-outPE1.close()
-outPE2.close()
-outSE.close()
+if PE_open:
+    outPE1.close()
+    outPE2.close()
+if SE_open:
+    outSE.close()
