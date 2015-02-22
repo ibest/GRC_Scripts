@@ -30,10 +30,7 @@ option_list <- list(
               dest="errorCorrect"),
   make_option(c("-l", "--large_contig_size"), type="integer", default=500,
               help="size of contig considered 'large' [defaults %default]",
-              dest="largeContig"),
-  make_option(c("-v", "--vector-file"), type="character", default=NULL,
-              help="file name with vector sequences in fasta format to provide Spades [default %default]",
-              dest="vector")  
+              dest="largeContig")
 )
 
 # get command line options, if help option encountered print help and exit,
