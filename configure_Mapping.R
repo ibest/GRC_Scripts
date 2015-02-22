@@ -273,7 +273,7 @@ if (opt$mappingAlgorithm == "bowtie"){
         				"-U",paste(index$SE,collapse=","),
                         sep=" "),""),
     				"2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"out",sep=".")),
-    				"| samtools view -bS - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
+    				"| samtools view -bS -F 0x100 - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),sep=" "));
     	})
     },mc.cores=floor(procs/opt$mprocs))
     if (!all(sapply(bowtie_out, "==", 0L))){
@@ -300,7 +300,7 @@ if (opt$mappingAlgorithm == "bowtie"){
                          paste(index$PE1,collapse=","),
                          paste(index$PE2,collapse=","),
                          "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","out",sep=".")),
-                         "| samtools view -bS - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),sep=" "));
+                         "| samtools view -bS -F 0x100 - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),sep=" "));
             system(paste("samtools view  -H", 
                          file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
                          "| head -n -1 > ",
@@ -321,7 +321,7 @@ if (opt$mappingAlgorithm == "bowtie"){
                          index$target_path,
                          paste(index$SE,collapse=","),
                          "2>",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","out",sep=".")),
-                         "| samtools view -bS - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),sep=" "));
+                         "| samtools view -bS -F 0x100 - 2> /dev/null >", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"SE","bam",sep=".")),sep=" "));
             system(paste("samtools view  -H", 
                          file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"PE","bam",sep=".")),
                          "| head -n -1 > ",
