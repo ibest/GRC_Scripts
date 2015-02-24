@@ -414,6 +414,20 @@ colnames(targetTables) <- sapply(targets,"[[",1L)
 targetTables <- data.frame(ID=rownames(targetTables),targetTables,assign=colnames(targetTables)[apply(targetTables,1,which.max)])
 write.table(targetTables,file.path(opt$mappingFolder,"SummarySample2Targets.txt"),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
 
+filesToRead <- unlist(sapply(unique(samples[,opt$samplesColumn]),function(x) file.path(opt$mappingFolder,x,paste(x,index$target_name,"flagstat",sep="."))))
+data.flagstat <- sapply(filesToRead,function(file){
+    values <- readLines(file)
+    values <- sapply(strsplit(values,split=" + 0",fixed=T),"[[",1L)
+    as.numeric(values)
+})
+rownames(data.flagstat) <- c("totalNumberOfReads","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
+data.flagstat = rbind(data.flagstat[c("totalNumberOfReads","numMappedReads"),],"numMappedReadsPercent"=data.flagstat["numMappedReads",]/data.flagstat["totalNumberOfReads",],data.flagstat[c("ReadsPaired","ProperlyPaired"),],"ProperlyPairedPercent"=data.flagstat["ProperlyPaired",]/data.flagstat["ReadsPaired",],data.flagstat[c("Singletons","mappedAcrossContigs"),])
+write.table(t(data.flagstat),file.path(opt$mappingFolder,"MappingFlagstats.txt"),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
+
+
+
+
+
 #####################################################
 ## extract unmapped reads
 if (opt$extract_unmapped){## Extract Unmapped Reads
