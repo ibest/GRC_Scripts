@@ -143,7 +143,7 @@ spades_out <- mclapply(spades, function(index){
   try({
     call <- paste("spades.py",
                  "--careful",
-                 "-k 21,33,55,77,99,127",
+#                 "-k 21,33,55,77,99,127",
                  "-t", opt$nprocs,
                  ifelse(opt$errorCorrect,"","--only-assembler"), ## default --only-assembler
                  "-o",file.path(opt$spadesFolder,index$sampleFolder),
