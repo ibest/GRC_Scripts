@@ -135,7 +135,7 @@ spadesList <- function(samples, reads_folder, column){
 
 spades <- spadesList(samples,opt$readFolder,opt$samplesColumn)
 
-if (length(index$PE1) > 1 | length(index$SE > 1)) stop("Sorry but configure_Spades.R does not handle more than one fastq read set")
+if (length(spades$PE1) > 1 | length(spades$SE > 1)) stop("Sorry but configure_Spades.R does not handle more than one fastq read set")
 ## run newbler
 spades_out <- mclapply(spades, function(index){
   if(file.exists(file.path(opt$spadesFolder,index$sampleFolder))) suppressWarnings(unlink(file.path(opt$spadesFolder,index$sampleFolder),recursive=TRUE))
