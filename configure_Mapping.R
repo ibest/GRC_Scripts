@@ -139,22 +139,22 @@ if (is.na(opt$mappingFolder)){
 	if ((algorithm == "bowtie" & file.exists(paste(targets,"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(targets,"bwt",sep=".")))){
 		### single target, bowtie2 build exists
 		targets_list <- list(c(basename(targets),targets))
-	} else if( file_ext(targets) %in% c("fasta","fa","fna") ){
-	### single target, need to build indexes
-	if (!file.exists(targets)){
-		write(paste("Targets file (",targets,") does not exist"), stderr())
-		stop("Quiting")
-	}
-	if (algorithm == "bowtie"){
-		if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"rev.2.bt2",sep="."))){
-			write(paste("Preparing bowtie2 indexes for:",targets,"\n"),stdout())
-			res <- system(paste("bowtie2-build",targets,sub(".fasta$|.fa$|.fna$","",targets)),ignore.stdout=T, ignore.stderr=T)
-			if (res != 0){
-				write(paste("Failed building Bowtie2 indexes for (",targets,") "), stderr())
-				stop("Quiting")
-			}
-		}
-		targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))	
+	} else if( file_ext(targets) %in% c("fasta$","fa$","fna$") ){
+	    ### single target, need to build indexes
+    	if (!file.exists(targets)){
+    		write(paste("Targets file (",targets,") does not exist"), stderr())
+    		stop("Quiting")
+    	}
+    	if (algorithm == "bowtie"){
+    		if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"rev.2.bt2",sep="."))){
+    			write(paste("Preparing bowtie2 indexes for:",targets,"\n"),stdout())
+    			res <- system(paste("bowtie2-build",targets,sub(".fasta$|.fa$|.fna$","",targets)),ignore.stdout=T, ignore.stderr=T)
+    			if (res != 0){
+    				write(paste("Failed building Bowtie2 indexes for (",targets,") "), stderr())
+    				stop("Quiting")
+    			}
+    		}
+    		targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))	
 		} else if (algorithm == "bwa"){
 			if(!file.exists(paste(targets,"bwt",sep="."))){
 				write(paste("Preparing bwa indexes for:",targets,"\n"),stdout())
@@ -171,7 +171,7 @@ if (is.na(opt$mappingFolder)){
 		targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
         #	 Assume first column is name, second is the fasta file, remaining columns are ignored
 		for( i in seq.int(length(targets_list)) ) {
-			if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
+			if(file_ext(targets_list[[i]][2]) %in% c("fasta$","fa$","fna$")){
 				if (!file.exists(targets_list[[i]][2])){
 					write(paste("Targets file (",targets_list[[i]][2],") does not exist"), stderr())
 					stop("Quiting")
@@ -227,7 +227,7 @@ if (is.na(opt$mappingFolder)){
 	mapping_list <- list()
 	for (i in seq.int(to=nrow(samples))){
 		reads <- dir(path=file.path(reads_folder,samples[i,column]),pattern="fastq$",full.names=TRUE)
-		map <- lapply(c("TEST","_merged|_SE","_PE1|_R1","_PE2|_R2"),grep,x=reads,value=TRUE)
+		map <- lapply(c("TEST","_merged|_SE","_PE1|_R1\\.","_PE2|_R2\\."),grep,x=reads,value=TRUE)
 		names(map) <- c("TEST","SE","PE1","PE2")
         if (opt$ignoreSingles) map$SE=character(0)
 		map$sampleFolder=samples[i,column]
