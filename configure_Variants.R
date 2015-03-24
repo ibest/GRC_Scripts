@@ -108,7 +108,7 @@ picard = paste("java -jar",opt$PICARD)
             system(paste("samtools faidx",targets[2]))
         if(!file.exists(ifelse(file_ext(targets[2]) %in% c("fasta","fa"),paste(sub(".fasta$|.fa$","",targets[2]),"dict",sep="."),paste(targets[2],"dict",sep="."))))
             system(paste(picard,"R=",targets[2],"O=",ifelse(file_ext(targets[2]) %in% c("fasta","fa"),paste(sub(".fasta$|fa$","",targets[2]),"dict",sep="."),paste(targets[2],"dict",sep="."))))        
-    })
+    })    
     return(targets_list)
 }
 
@@ -136,6 +136,8 @@ picard = paste("java -jar",opt$PICARD)
         for(j in targets){
             mapping_list[[paste(map$sampleName,j[1],sep="_")]] <- map
             mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_name <- j[1]
+            if(opt$mappingAlgorithm == "bowtie")
+                mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_name <- sub(".fasta$|.fa$|.fna$","",mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_name)
             mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_path <- j[2]
             mapping_list[[paste(map$sampleName,j[1],sep="_")]]$bam_file <- file.path(mapping_folder,map$sampleName,paste(map$sampleName,j[1],"bam",sep="."))
         }
