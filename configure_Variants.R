@@ -106,8 +106,8 @@ picard = paste("java -jar",opt$PICARD)
     sapply(targets_list,function(targets){
         if(!file.exists(paste(targets[2],"fai",sep=".")))
             system(paste("samtools faidx",targets[2]))
-        if(!file.exists(ifelse(file_ext(targets[2]) == "fasta",paste(sub(".fasta$","",targets[2]),"dict",sep="."),paste(targets[2],"dict",sep="."))))
-            system(paste(picard,"R=",targets[2],"O=",ifelse(file_ext(targets[2]) == "fasta",paste(sub(".fasta$","",targets[2]),"dict",sep="."),paste(targets[2],"dict",sep="."))))        
+        if(!file.exists(ifelse(file_ext(targets[2]) %in% c("fasta","fa"),paste(sub(".fasta$|.fa$","",targets[2]),"dict",sep="."),paste(targets[2],"dict",sep="."))))
+            system(paste(picard,"R=",targets[2],"O=",ifelse(file_ext(targets[2]) %in% c("fasta","fa"),paste(sub(".fasta$|fa$","",targets[2]),"dict",sep="."),paste(targets[2],"dict",sep="."))))        
     })
     return(targets_list)
 }
