@@ -136,9 +136,9 @@ if (is.na(opt$mappingFolder)){
 ##	targets: filename of targets builds, fasta file or text file with multiple targets
 "prepareTargets" <- function(targets, algorithm){
 	### single target, indexes exist
-	if ((algorithm == "bowtie" & file.exists(paste(targets,"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(targets,"bwt",sep=".")))){
+	if ((algorithm == "bowtie" & file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(targets,"bwt",sep=".")))){
 		### single target, bowtie2 build exists
-		targets_list <- list(c(basename(targets),targets))
+		targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))
 	} else if( file_ext(targets) %in% c("fasta$","fa$","fna$") ){
 	    ### single target, need to build indexes
     	if (!file.exists(targets)){
