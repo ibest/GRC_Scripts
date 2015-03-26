@@ -227,7 +227,7 @@ if (is.na(opt$mappingFolder)){
 	mapping_list <- list()
 	for (i in seq.int(to=nrow(samples))){
 		reads <- dir(path=file.path(reads_folder,samples[i,column]),pattern="fastq$",full.names=TRUE)
-		map <- lapply(c("TEST","_merged|_SE","_PE1|_R1\\.","_PE2|_R2\\."),grep,x=reads,value=TRUE)
+		map <- lapply(c("TEST","_merged|_SE","_PE1|_R1.fastq\\.","_PE2|_R2.fastq\\."),grep,x=reads,value=TRUE)
 		names(map) <- c("TEST","SE","PE1","PE2")
         if (opt$ignoreSingles) map$SE=character(0)
 		map$sampleFolder=samples[i,column]
