@@ -139,7 +139,7 @@ picard = paste("java -jar",opt$PICARD)
             if(opt$mappingAlgorithm == "bowtie")
                 mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_name <- sub(".fasta$|.fa$|.fna$","",j[1])
             mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_path <- j[2]
-            mapping_list[[paste(map$sampleName,j[1],sep="_")]]$bam_file <- file.path(mapping_folder,map$sampleName,paste(map$sampleName,j[1],"bam",sep="."))
+            mapping_list[[paste(map$sampleName,j[1],sep="_")]]$bam_file <- file.path(mapping_folder,map$sampleName,paste(map$sampleName,mapping_list[[paste(map$sampleName,j[1],sep="_")]]$target_name,"bam",sep="."))
         }
     }
     write(paste("Setting up",length(mapping_list),"jobs",sep=" "),stdout())
