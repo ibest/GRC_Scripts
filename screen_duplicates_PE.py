@@ -115,6 +115,7 @@ def main(infile1, infile2, outfile1, outfile2,skip):
     global i
     global duplicates
     global stime
+    global rev
 #Open inputs:
     if infile1.split(".")[-1] == "gz":
         iterator1 = fastqIter(sp_gzip_read(infile1))
