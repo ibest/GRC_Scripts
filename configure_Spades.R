@@ -270,7 +270,7 @@ data.flagstat <- sapply(filesToRead,function(file){
     values <- sapply(strsplit(values,split=" + 0",fixed=T),"[[",1L)
     as.numeric(values)
 })
-rownames(data.flagstat) <- c("totalNumberOfReads","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
+rownames(data.flagstat) <- c("totalNumberOfReads","secondary","supplementary","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
 data.flagstat = rbind(data.flagstat[c("totalNumberOfReads","numMappedReads"),],"numMappedReadsPercent"=data.flagstat["numMappedReads",]/data.flagstat["totalNumberOfReads",],data.flagstat[c("ReadsPaired","ProperlyPaired"),],"ProperlyPairedPercent"=data.flagstat["ProperlyPaired",]/data.flagstat["ReadsPaired",],data.flagstat[c("Singletons","mappedAcrossContigs"),])
 
 
