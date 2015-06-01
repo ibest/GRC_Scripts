@@ -121,7 +121,7 @@ newblerList <- function(samples, reads_folder, column){
   newbler_list <- list()
   for (i in seq.int(to=nrow(samples))){
     reads <- dir(path=file.path(reads_folder,samples[i,column]),pattern="fastq$",full.names=TRUE)
-    bt <- lapply(c("_merged|_extenededFrags|_SE","notCombined_1.fastq|_PE1|_R1","notCombined_2.fastq|_PE2|_R2"),grep,x=reads,value=TRUE)
+    bt <- lapply(c("extendedFrags.fastq|_merged|_SE","notCombined_1.fastq|_PE1|_R1","notCombined_2.fastq|_PE2|_R2"),grep,x=reads,value=TRUE)
     names(bt) <- c("SE","PE1","PE2")
     bt$sampleFolder=samples[i,column]
     newbler_list[[bt$sampleFolder]] <- bt
