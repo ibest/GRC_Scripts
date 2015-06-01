@@ -59,7 +59,7 @@ suppressPackageStartupMessages(library("parallel"))
   ### column SEQUENCE_ID should be the folder name inside of Raw_Folder
   ### column SAMPLE_ID should be the sample name
   ### rows can be commented out with #
-  targets <- read.table(file,sep="",header=TRUE,as.is=TRUE)
+  targets <- read.table(file,sep="\t",header=TRUE,as.is=TRUE)
   if( !all(c("SAMPLE_ID","SEQUENCE_ID") %in% colnames(targets)) ){
     write(paste("Expecting the two columns SAMPLE_ID and SEQUENCE_ID in samples file (tab-delimited)\n"), stderr())
     stop()
@@ -121,7 +121,7 @@ newblerList <- function(samples, reads_folder, column){
   newbler_list <- list()
   for (i in seq.int(to=nrow(samples))){
     reads <- dir(path=file.path(reads_folder,samples[i,column]),pattern="fastq$",full.names=TRUE)
-    bt <- lapply(c("_merged|_SE","_PE1|_R1","_PE2|_R2"),grep,x=reads,value=TRUE)
+    bt <- lapply(c("_merged|_extenededFrags|_SE","notCombined_1.fastq|_PE1|_R1","notCombined_2.fastq|_PE2|_R2"),grep,x=reads,value=TRUE)
     names(bt) <- c("SE","PE1","PE2")
     bt$sampleFolder=samples[i,column]
     newbler_list[[bt$sampleFolder]] <- bt
