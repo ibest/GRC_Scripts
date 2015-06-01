@@ -93,7 +93,7 @@ if (is.na(opt$mappingFolder)){
 	### column SEQUENCE_ID should be the folder name inside of Raw_Folder
 	### column SAMPLE_ID should be the sample name
 	### rows can be commented out with #
-	targets <- read.table(file,sep="",header=TRUE,as.is=TRUE)
+	targets <- read.table(file,sep="\t",header=TRUE,as.is=TRUE)
 	if( !all(c("SAMPLE_ID","SEQUENCE_ID") %in% colnames(targets)) ){
 		write(paste("Expecting the two columns SAMPLE_ID and SEQUENCE_ID in samples file (tab-delimited)\n"), stderr())
 		stop()
@@ -227,8 +227,8 @@ if (is.na(opt$mappingFolder)){
 	mapping_list <- list()
 	for (i in seq.int(to=nrow(samples))){
 		reads <- dir(path=file.path(reads_folder,samples[i,column]),pattern="fastq$",full.names=TRUE)
-		map <- lapply(c("TEST","_merged|_SE","_PE1|_R1.fastq\\.","_PE2|_R2.fastq\\."),grep,x=reads,value=TRUE)
-		names(map) <- c("TEST","SE","PE1","PE2")
+		map <- lapply(c("extendedFrags.fastq|_merged|_SE","notCombined_1.fastq|_PE1|_R1","notCombined_2.fastq|_PE2|_R2"),grep,x=reads,value=TRUE)
+		names(map) <- c("SE","PE1","PE2")
         if (opt$ignoreSingles) map$SE=character(0)
 		map$sampleFolder=samples[i,column]
 		for(j in targets){
@@ -421,7 +421,7 @@ flagTables <- sapply(targets,function(tgt){
         values <- sapply(strsplit(values,split=" + 0",fixed=T),"[[",1L)
         as.numeric(values)
     })
-    rownames(data.flagstat) <- c("totalNumberOfReads","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
+    rownames(data.flagstat) <- c("totalNumberOfReads","secondary","supplementary","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
     data.flagstat = rbind(data.flagstat[c("totalNumberOfReads","numMappedReads"),],"numMappedReadsPercent"=data.flagstat["numMappedReads",]/data.flagstat["totalNumberOfReads",],data.flagstat[c("ReadsPaired","ProperlyPaired"),],"ProperlyPairedPercent"=data.flagstat["ProperlyPaired",]/data.flagstat["ReadsPaired",],data.flagstat[c("Singletons","mappedAcrossContigs"),])
     write.table(t(data.flagstat),file.path(opt$mappingFolder,paste(tgt[1],"MappingFlagstats","txt",sep=".")),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
 })    
