@@ -337,7 +337,7 @@ htseqTables <- sapply(targets,function(tgt){
     info = sapply(info,function(x) x[-statidx,2])
     
     htseq_data <- data.frame("Reads in feature"=colSums(info),"Reads NOT in feature"=stat[1,],"Reads ambiguous"=stat[2,],"Reads too low qual"
-                    =stat[3,],"Percent Assigned To Feature"=colSums(info)/(colSums(info)+colSums(stat)),"Number of Features"=nrow(info),"Number of 0 count features"=apply(info,2,function(x)sum(x == 0)))
+                    =stat[3,],"Percent Assigned To Feature"=(colSums(info)/(colSums(info)+colSums(stat)))*100,"Number of Features"=nrow(info),"Number of 0 count features"=apply(info,2,function(x)sum(x == 0)))
     write.table(htseq_data,file.path(opt$htseqFolder,paste(tgt[1],"summary","txt",sep=".")),row.names=TRUE,col.names=TRUE,quote=FALSE,sep="\t")
 #    htseq_data
 })
