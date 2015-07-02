@@ -139,7 +139,7 @@ if (is.na(opt$mappingFolder)){
 	if ((algorithm == "bowtie" & file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(targets,"bwt",sep=".")))){
 		### single target, bowtie2 build exists
 		targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))
-	} else if( file_ext(targets) %in% c("fasta$","fa$","fna$") ){
+	} else if( file_ext(targets) %in% c("fasta","fa","fna") ){
 	    ### single target, need to build indexes
     	if (!file.exists(targets)){
     		write(paste("Targets file (",targets,") does not exist"), stderr())
@@ -171,7 +171,7 @@ if (is.na(opt$mappingFolder)){
 		targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
         #	 Assume first column is name, second is the fasta file, remaining columns are ignored
 		for( i in seq.int(length(targets_list)) ) {
-			if(file_ext(targets_list[[i]][2]) %in% c("fasta$","fa$","fna$")){
+			if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna")){
 				if (!file.exists(targets_list[[i]][2])){
 					write(paste("Targets file (",targets_list[[i]][2],") does not exist"), stderr())
 					stop("Quiting")
