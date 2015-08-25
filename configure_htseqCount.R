@@ -159,82 +159,82 @@ targets <- loadDataFile(samples, opt$mappingFolder,opt$samplesColumn,raw=NA)
 ## 
 ## Parameters
 ##	targets: filename of targets builds, fasta file or text file with multiple targets
-"prepareTargets" <- function(targets, algorithm=NA){
+"prepareTargets" <- function(ptargets, algorithm=NA){
     ### single target, indexes exist
-    if ((algorithm == "bowtie" & file.exists(paste(targets,"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(targets,"bwt",sep=".")))){
+    if ((algorithm == "bowtie" & file.exists(paste(ptargets,"rev.2.bt2",sep="."))) | (algorithm == "bwa" & file.exists(paste(ptargets,"bwt",sep=".")))){
         ### single target, bowtie2 build exists
-        targets_list <- list(c(basename(targets),targets))
-    } else if( file_ext(targets) %in% c("fasta","fa","fna") ){
+        ptargets_list <- list(c(basename(ptargets),ptargets))
+    } else if( file_ext(ptargets) %in% c("fasta","fa","fna") ){
         ### single target, need to build indexes
-        if (!file.exists(targets)){
-            write(paste("Targets file (",targets,") does not exist"), stderr())
+        if (!file.exists(ptargets)){
+            write(paste("Targets file (",ptargets,") does not exist"), stderr())
             stop("Quiting")
         }
         if (algorithm == "bowtie"){
-            if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets),"rev.2.bt2",sep="."))){
-                write(paste("Preparing bowtie2 indexes for:",targets,"\n"),stdout())
-                res <- system(paste("bowtie2-build",targets,sub(".fasta$|.fa$|.fna$","",targets)),ignore.stdout=T, ignore.stderr=T)
+            if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",ptargets),"rev.2.bt2",sep="."))){
+                write(paste("Preparing bowtie2 indexes for:",ptargets,"\n"),stdout())
+                res <- system(paste("bowtie2-build",ptargets,sub(".fasta$|.fa$|.fna$","",ptargets)),ignore.stdout=T, ignore.stderr=T)
                 if (res != 0){
-                    write(paste("Failed building Bowtie2 indexes for (",targets,") "), stderr())
+                    write(paste("Failed building Bowtie2 indexes for (",ptargets,") "), stderr())
                     stop("Quiting")
                 }
             }
-            targets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(targets)),sub(".fasta$|.fa$|.fna$","",targets)))	
+            ptargets_list <- list(c(sub(".fasta$|.fa$|.fna$","",basename(ptargets)),sub(".fasta$|.fa$|.fna$","",ptargets)))	
         } else if (algorithm == "bwa"){
-            if(!file.exists(paste(targets,"bwt",sep="."))){
-                write(paste("Preparing bwa indexes for:",targets,"\n"),stdout())
-                res <- system(paste("bwa index",targets),ignore.stdout=T, ignore.stderr=T) 
+            if(!file.exists(paste(ptargets,"bwt",sep="."))){
+                write(paste("Preparing bwa indexes for:",ptargets,"\n"),stdout())
+                res <- system(paste("bwa index",ptargets),ignore.stdout=T, ignore.stderr=T) 
                 if (res != 0){
-                    write(paste("Failed building BWA indexes for (",targets,") "), stderr())
+                    write(paste("Failed building BWA indexes for (",ptargets,") "), stderr())
                     stop("Quiting")
                 }		
             }
-            targets_list <- list(c(basename(targets),targets))					
+            ptargets_list <- list(c(basename(ptargets),ptargets))					
         }
-    } else if( file_ext(targets) %in% c("gtf","gff") ){
+    } else if( file_ext(ptargets) %in% c("gtf","gff") ){
         ### single target, gff files
-        if (!file.exists(targets)){
-            write(paste("gtf [or gff] file (",targets,") does not exist"), stderr())
+        if (!file.exists(ptargets)){
+            write(paste("gtf [or gff] file (",ptargets,") does not exist"), stderr())
             stop("Quiting")
         }
-        targets_list <- list(c(basename(targets),"NA",targets))
-    } else if (file.exists(targets)){
-        ### multiple targets
-        targets_list <- lapply(readLines(targets),function(x) strsplit(x,split="\t")[[1]])
-        #	 Assume first column is name, second is the fasta file, remaining columns are ignored
-        for( i in seq.int(length(targets_list)) ) {
-            if(file_ext(targets_list[[i]][2]) %in% c("fasta","fa","fna") & !is.na(algorithm)){                
-                if (!file.exists(targets_list[[i]][2])){
-                    write(paste("Targets file (",targets_list[[i]][2],") does not exist"), stderr())
+        ptargets_list <- list(c(basename(ptargets),"NA",ptargets))
+    } else if (file.exists(ptargets)){
+        ### multiple ptargets
+        ptargets_list <- lapply(readLines(ptargets),function(x) strsplit(x,split="\t")[[1]])
+        #	 Assume first column is name, second is the fasta file, third is gtf remaining columns are ignored
+        for( i in seq.int(length(ptargets_list)) ) {
+            if(file_ext(ptargets_list[[i]][2]) %in% c("fasta","fa","fna") & !is.na(algorithm)){                
+                if (!file.exists(ptargets_list[[i]][2])){
+                    write(paste("Targets file (",ptargets_list[[i]][2],") does not exist"), stderr())
                     stop("Quiting")
                 }
                 if (algorithm == "bowtie"){
-                    if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2]),"rev.2.bt2",sep="."))){
-                        write(paste("Preparing bowtie2 indexes for:",targets_list[[i]][2],"\n"),stdout())
-                        res <- system(paste("bowtie2-build",targets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])),ignore.stdout=T, ignore.stderr=T)
+                    if(!file.exists(paste(sub(".fasta$|.fa$|.fna$","",ptargets_list[[i]][2]),"rev.2.bt2",sep="."))){
+                        write(paste("Preparing bowtie2 indexes for:",ptargets_list[[i]][2],"\n"),stdout())
+                        res <- system(paste("bowtie2-build",ptargets_list[[i]][2],sub(".fasta$|.fa$|.fna$","",ptargets_list[[i]][2])),ignore.stdout=T, ignore.stderr=T)
                         if (res != 0){
-                            write(paste("Failed building Bowtie2 indexes for (",targets_list[[i]][2],") "), stderr())
+                            write(paste("Failed building Bowtie2 indexes for (",ptargets_list[[i]][2],") "), stderr())
                             stop("Quiting")
                         }
                     }
-                    targets_list[[i]][2] <- sub(".fasta$|.fa$|.fna$","",targets_list[[i]][2])
+                    ptargets_list[[i]][2] <- sub(".fasta$|.fa$|.fna$","",ptargets_list[[i]][2])
                 } else if (algorithm == "bwa"){
-                    if(!file.exists(paste(targets_list[[i]][2],"bwt",sep="."))){
-                        write(paste("Preparing bwa indexes for:",targets_list[[i]][2],"\n"),stdout())
-                        res <- system(paste("bwa index",targets_list[[i]][2]),ignore.stdout=T, ignore.stderr=T) 
+                    if(!file.exists(paste(ptargets_list[[i]][2],"bwt",sep="."))){
+                        write(paste("Preparing bwa indexes for:",ptargets_list[[i]][2],"\n"),stdout())
+                        res <- system(paste("bwa index",ptargets_list[[i]][2]),ignore.stdout=T, ignore.stderr=T) 
                         if (res != 0){
-                            write(paste("Failed building BWA indexes for (",targets_list[[i]][2],") "), stderr())
+                            write(paste("Failed building BWA indexes for (",ptargets_list[[i]][2],") "), stderr())
                             stop("Quiting")
                         }		
                     }
-                    targets_list[[i]][2] <- targets_list[[i]][2]			 
+                    ptargets_list[[i]][2] <- ptargets_list[[i]][2]			 
                 }
-            } else if(file_ext(targets_list[[i]][3]) %in% c("gtf","gff")){
-                if (!file.exists(targets_list[[i]][3])){
-                    write(paste("Targets file (",targets_list[[i]][3],") does not exist"), stderr())
+            } else if(file_ext(ptargets_list[[i]][3]) %in% c("gtf","gff")){
+                if (!file.exists(ptargets_list[[i]][3])){
+                    write(paste("Targets file (",ptargets_list[[i]][3],") does not exist"), stderr())
                     stop("Quiting")
                 }
-                targets_list[[i]][2] <- targets_list[[i]][3]
+                ptargets_list[[i]][2] <- ptargets_list[[i]][3]
             } else {
                 write(paste("Something wrong with targets file (or table)"),stderr())
                 stop("Quiting")
@@ -244,8 +244,8 @@ targets <- loadDataFile(samples, opt$mappingFolder,opt$samplesColumn,raw=NA)
         write(paste("Something wrong with targets file (or table)"),stderr())
         stop("Quiting")
     }
-    write(paste("Found", length(targets_list), "targets",sep=" "),stdout())	
-    return(targets_list)
+    write(paste("Found", length(ptargets_list), "targets",sep=" "),stdout())	
+    return(ptargets_list)
 }
 
 targets <- prepareTargets(opt$mappingTarget)
@@ -337,7 +337,7 @@ htseqTables <- sapply(targets,function(tgt){
     info = sapply(info,function(x) x[-statidx,2])
     
     htseq_data <- data.frame("Reads in feature"=colSums(info),"Reads NOT in feature"=stat[1,],"Reads ambiguous"=stat[2,],"Reads too low qual"
-                    =stat[3,],"Percent Assigned To Feature"=colSums(info)/(colSums(info)+colSums(stat)),"Number of Features"=nrow(info),"Number of 0 count features"=apply(info,2,function(x)sum(x == 0)))
+                    =stat[3,],"Percent Assigned To Feature"=(colSums(info)/(colSums(info)+colSums(stat)))*100,"Number of Features"=nrow(info),"Number of 0 count features"=apply(info,2,function(x)sum(x == 0)))
     write.table(htseq_data,file.path(opt$htseqFolder,paste(tgt[1],"summary","txt",sep=".")),row.names=TRUE,col.names=TRUE,quote=FALSE,sep="\t")
 #    htseq_data
 })
