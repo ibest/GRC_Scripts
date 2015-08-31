@@ -62,24 +62,24 @@ then
  
 		cd $REPO 
 
-		tar -cvpf $DIRECTORY.tar $DIRECTORY | xargs -I '{}' sh -c "test -f '{}' &&  md5sum '{}'" | tee $DIRECTORY.md5 > /tmp/miseq_tar_md5.txt
-		echo "#################################################" >> /tmp/miseq_tar_md5.txt
-		echo "#################################################" >> /tmp/miseq_tar_md5.txt
-		echo "#################################################" >> /tmp/miseq_tar_md5.txt
-		tar -df $DIRECTORY.tar $DIRECTORY > /tmp/miseq_tar.txt
+		# tar -cvpf $DIRECTORY.tar $DIRECTORY | xargs -I '{}' sh -c "test -f '{}' &&  md5sum '{}'" | tee $DIRECTORY.md5 > /tmp/miseq_tar_md5.txt
+		# echo "#################################################" >> /tmp/miseq_tar_md5.txt
+		# echo "#################################################" >> /tmp/miseq_tar_md5.txt
+		# echo "#################################################" >> /tmp/miseq_tar_md5.txt
+		# tar -df $DIRECTORY.tar $DIRECTORY > /tmp/miseq_tar.txt
 
-		if [ $? -ne 0 ]
-		then
-			$EMAIL --to "admins" --subject "MiSeq Problem" --message "There was a problem with the tar"
-			exit 1
-		fi
+		# if [ $? -ne 0 ]
+		# then
+		# 	$EMAIL --to "admins" --subject "MiSeq Problem" --message "There was a problem with the tar"
+		# 	exit 1
+		# fi
 		
-		gzip $DIRECTORY.tar
-		if [ $? -ne 0 ]
-		then
-		    $EMAIL --to "admins" --subject "MiSeq Problem" --message "There was a problem with the gzip"
-            exit 1	
-		fi
+		# gzip $DIRECTORY.tar
+		# if [ $? -ne 0 ]
+		# then
+		#     $EMAIL --to "admins" --subject "MiSeq Problem" --message "There was a problem with the gzip"
+  #           exit 1	
+		# fi
 
 
 #		rsync -a $DIRECORY.tar.gz $CSTOR/$DATA/
