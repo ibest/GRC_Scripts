@@ -1,7 +1,7 @@
 
 opt <- list(
     samplesFile="samples.txt",
-    targetsFile="transposon.fa",
+    targetsFile="References/DOD_ARC_targets.fasta",
     readsFolder="02-Cleaned",
     arcFolder="03-ARC")
 
@@ -34,7 +34,6 @@ arc_header <- function(ref,output){
     "# bowtie2_k=1",
     "# rip=True",
     "# cdna=False",
-    "# subsample=0.1",
     "# maskrepeats=False",
     "Sample_ID\tFileName\tFileType")
   writeLines(config_output,output)
@@ -42,7 +41,8 @@ arc_header <- function(ref,output){
 
 
 write_out_arc_config <- function(reads,sample,output){
-  config_output <- c(paste(sample,reads,c("SE","PE1","PE2")[unlist(sapply(c("merged|SE","PE1","PE2"),grep,x=reads))],sep="\t"))
+  pick <- unlist(sapply(c("merged|SE","R1|PE1","R2|PE2"),grep,x=reads))
+  config_output <- c(paste(sample,reads[pick],c("SE","PE1","PE2")[!is.na(pick)],sep="\t"))
   writeLines(config_output,output)
 }
 
@@ -55,7 +55,7 @@ dir.create(opt$arcFolder)
 
 if(!file.exists(dir(pattern=opt$samplesFile,full.names=TRUE))) stop("Samples file does not exist")
 
-samples <- read.table(opt$samplesFile,sep="",header=T,as.is=T)
+samples <- read.table(opt$samplesFile,sep="\t",header=T,as.is=T)
 if(!file.exists(opt$targetsFile)) stop("Targets file does not exist")
 
 zz <- file(file.path(opt$arcFolder,"ARC_config.txt"), "w")  # open an output file connection
