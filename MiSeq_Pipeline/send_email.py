@@ -2,7 +2,7 @@
 
 #ui mail
 
-email_addresses = {'crc_admins':['bposwald@gmail.com','bcheldelin@uidaho.edu'],'all':["msettles@uidaho.edu,dnew@uidaho.edu,bcheldelin@uidaho.edu,boswald@uidaho.edu"],'admins':["boswald@uidaho.edu,shunter@gmail.com"],'test':["boswald@uidaho.edu"]}
+email_addresses = {'crc_admins':['boswald@uidaho.edu'],'all':["dnew@uidaho.edu","boswald@uidaho.edu","alida@uidaho.edu"],'admins':["boswald@uidaho.edu"],'test':["boswald@uidaho.edu"]}
 smtp_server = 'm.outlook.com'
 smtp_port = 587
 
