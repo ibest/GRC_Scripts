@@ -241,7 +241,7 @@ spades_out <- mclapply(spades, function(index){
         }   
     }
     try({
-        res4 <- system(paste("samtools sort",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","bam",sep=".")),file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds",sep=".")),"2> /dev/null",sep=" "));
+        res4 <- system(paste("samtools sort",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","bam",sep=".")),"-o", file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","bam",sep=".")),"-@", opt$nprocs,"2> /dev/null",sep=" "));
         res4 <- res4 & system(paste("samtools index",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","bam",sep=".")),"2> /dev/null",sep=" "));
         res4 <- res4 & system(paste("samtools idxstats",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","bam",sep=".")),">",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","idxstats",sep=".")),"2> /dev/null",sep=" "))
         res4 <- res4 & system(paste("samtools flagstat",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","bam",sep=".")),">",file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds","flagstat",sep=".")),"2> /dev/null",sep=" "))
@@ -270,7 +270,9 @@ data.flagstat <- sapply(filesToRead,function(file){
     values <- sapply(strsplit(values,split=" + 0",fixed=T),"[[",1L)
     as.numeric(values)
 })
+#rownames(data.flagstat) <- c("totalNumberOfReads","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
 rownames(data.flagstat) <- c("totalNumberOfReads","secondary","supplementary","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
+
 data.flagstat = rbind(data.flagstat[c("totalNumberOfReads","numMappedReads"),],"numMappedReadsPercent"=data.flagstat["numMappedReads",]/data.flagstat["totalNumberOfReads",],data.flagstat[c("ReadsPaired","ProperlyPaired"),],"ProperlyPairedPercent"=data.flagstat["ProperlyPaired",]/data.flagstat["ReadsPaired",],data.flagstat[c("Singletons","mappedAcrossContigs"),])
 
 
@@ -308,8 +310,10 @@ data.idxstats <- sapply(filesToRead,function(file){
 })
 
 finalSummary <- t(rbind(data.flagstat,data.AllContigs,data.LargeContigs,data.idxstats))
-
-#################################################################################
-
 write.table(finalSummary,file.path(opt$spadesFolder,"SummarySpadesAssemblies.txt"),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
 
+#################################################################################
+#### BLAST SEARCH
+
+#library(Biostrings)
+#library(hoardeR)

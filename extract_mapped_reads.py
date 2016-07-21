@@ -89,7 +89,6 @@ else:
     outSE = gzip.open(base + "_SE.fastq.gz", 'wb')
 
 
-
 def reverseComplement(s):
     """
     given a seqeucne with 'A', 'C', 'T', and 'G' return the reverse complement

@@ -1,7 +1,7 @@
 
 opt <- list(
     samplesFile="samples.txt",
-    targetsFile="References/DOD_ARC_targets.fasta",
+    targetsFile="Ref/Seq_from_PCR.fa",
     readsFolder="02-Cleaned",
     arcFolder="03-ARC")
 
@@ -24,13 +24,13 @@ arc_header <- function(ref,output){
     paste("# reference=",ref,sep=""),
     "# numcycles=20",
     "# mapper=bowtie2",
-    "# assembler=newbler",
-    "# nprocs=60",
+    "# assembler=spades",
+    "# nprocs=20",
     "# format=fastq",
     "# verbose=True",
     "# urt=True",
     "# map_against_reads=False",
-    "# assemblytimeout=60",
+    "# assemblytimeout=20",
     "# bowtie2_k=1",
     "# rip=True",
     "# cdna=False",
