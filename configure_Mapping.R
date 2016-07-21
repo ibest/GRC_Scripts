@@ -369,7 +369,7 @@ if (opt$mappingAlgorithm == "bowtie"){
 samtools_out <- mclapply(mapping, function(index){
 	dir.create(file.path(opt$mappingFolder,index$sampleFolder))
 	try({
-		res <- system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,sep=".")),"2> /dev/null",sep=" "));
+		res <- system(paste("samtools sort",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")), "-o", file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),"2> /dev/null",sep=" "));
 		res <- res & system(paste("samtools index",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),"2> /dev/null",sep=" "));
 		res <- res & system(paste("samtools idxstats",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"idxstats",sep=".")),"2> /dev/null",sep=" "))
 		res <- res & system(paste("samtools flagstat",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"bam",sep=".")),">",file.path(opt$mappingFolder,index$sampleFolder,paste(index$sampleFolder,index$target_name,"flagstat",sep=".")),"2> /dev/null",sep=" "))
@@ -421,6 +421,9 @@ flagTables <- sapply(targets,function(tgt){
         values <- sapply(strsplit(values,split=" + 0",fixed=T),"[[",1L)
         as.numeric(values)
     })
+
+#    rownames(data.flagstat) <- c("totalNumberOfReads","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
+    
     rownames(data.flagstat) <- c("totalNumberOfReads","secondary","supplementary","duplicates","numMappedReads","ReadsPaired","read1","read2","ProperlyPaired","itselfandmate","Singletons","mappedAcrossContigs","mapChrQ5")
     data.flagstat = rbind(data.flagstat[c("totalNumberOfReads","numMappedReads"),],"numMappedReadsPercent"=data.flagstat["numMappedReads",]/data.flagstat["totalNumberOfReads",],data.flagstat[c("ReadsPaired","ProperlyPaired"),],"ProperlyPairedPercent"=data.flagstat["ProperlyPaired",]/data.flagstat["ReadsPaired",],data.flagstat[c("Singletons","mappedAcrossContigs"),])
     write.table(t(data.flagstat),file.path(opt$mappingFolder,paste(tgt[1],"MappingFlagstats","txt",sep=".")),sep="\t",row.names=TRUE,col.names=TRUE,quote=FALSE)
