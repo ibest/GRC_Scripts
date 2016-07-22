@@ -125,10 +125,10 @@ def main(read1, read2, single, outfile1, outfile2, min, length, verbose):
             elif len(seq3['seq']) > length:
                 singles_count_kept += 1
                 singles_bases_count_kept += 2 * length
+                seq4 = copy.copy(seq3) # copy seq3 to seq4 before modifying
                 seq3['seq'] = seq3['seq'][0:length]
                 seq3['qual'] = seq3['qual'][0:length]
                 writeFastq(outfile1, seq3)
-                seq4 = copy.copy(seq3)
                 seq4['id'] = re.sub(' 1', ' 2', seq3['id'])
                 seq4['seq'] = revcomp(seq3['seq'])[0:length]
                 seq4['qual'] = rev(seq3['qual'])[0:length]
