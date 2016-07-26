@@ -129,9 +129,9 @@ def main(read1, read2, single, outfile1, outfile2, min, length, verbose):
                 seq3['seq'] = seq3['seq'][0:length]
                 seq3['qual'] = seq3['qual'][0:length]
                 writeFastq(outfile1, seq3)
-                seq4['id'] = re.sub(' 1', ' 2', seq3['id'])
-                seq4['seq'] = revcomp(seq3['seq'])[0:length]
-                seq4['qual'] = rev(seq3['qual'])[0:length]
+                seq4['id'] = re.sub(' 1', ' 2', seq4['id'])
+                seq4['seq'] = revcomp(seq4['seq'])[0:length]
+                seq4['qual'] = rev(seq4['qual'])[0:length]
                 writeFastq(outfile2, seq4)
             if singles_count % 500000 == 0 and verbose:
                 print "Singles:", "| reads:", singles_count, "| kept:", singles_count_kept, "| percent:", round(100.0 * singles_count_kept / singles_count, 2), "| reads/sec:", round(singles_count / (time.time() - stime), 0)

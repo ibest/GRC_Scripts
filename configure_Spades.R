@@ -156,7 +156,7 @@ spades_out <- mclapply(spades, function(index){
     if (res == 0 & file.exists(file.path(opt$spadesFolder,index$sampleFolder,"scaffolds.fasta"))){ # OK
         library(Biostrings)
         contig_seqs <- readDNAStringSet(file.path(opt$spadesFolder,index$sampleFolder,"contigs.fasta"))
-        writeXStringSet(contig_seqs[width(contig_seqs) > opt$largeContig],file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"LargeContigs.fna",sep=".")))
+        writeXStringSet(contig_seqs[width(contig_seqs) >= opt$largeContig],file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"LargeContigs.fna",sep=".")))
         writeXStringSet(contig_seqs,file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"AllContigs.fna",sep=".")))
 
         scaffold_seqs <- readDNAStringSet(file.path(opt$spadesFolder,index$sampleFolder,"scaffolds.fasta"))
@@ -164,7 +164,7 @@ spades_out <- mclapply(spades, function(index){
         scaffolds <- file.path(opt$spadesFolder,index$sampleFolder,paste(index$sampleFolder,"Scaffolds.fna",sep="."))        
         res <- system(paste("bwa index",scaffolds),ignore.stdout=T, ignore.stderr=T)
         if (res == 0){ ## BWA Map reads back to scaffolds
-            res = res2 = res3 = 0        
+            res = res2 = res3 = 0
             if(length(index$PE1)) try({
                 call <- paste("bwa mem",
                                   "-M", # Mark shorter split hits as secondary (for Picard compatibility).
