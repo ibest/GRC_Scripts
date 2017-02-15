@@ -127,7 +127,7 @@ spadesList <- function(samples, reads_folder, column){
     bt <- lapply(c("_merged|_SE","_PE1|_R1","_PE2|_R2"),grep,x=reads,value=TRUE)
     names(bt) <- c("SE","PE1","PE2")
     bt$sampleFolder=samples[i,column]
-    spades_list[[bt$sampleFolder]] <- bt
+    spades_list[[as.character(bt$sampleFolder)]] <- bt
   }
   write(paste("Setting up",length(spades_list),"jobs",sep=" "),stdout())  
   return(spades_list)
