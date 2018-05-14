@@ -112,11 +112,11 @@ def reverse(s):
 
 def writeread(ID, r1, r2):
     #read1
-    outPE1.write("@" + ID + "#0/1" '\n')
+    outPE1.write("@" + ID + "#0/1" + '\n')
     outPE1.write(r1[0] + '\n')
     outPE1.write('+\n' + r1[1] + '\n')
     #read2
-    outPE2.write("@" + ID + "#0/2" '\n')
+    outPE2.write("@" + ID + "#0/2" + '\n')
     outPE2.write(r2[0] + '\n')
     outPE2.write('+\n' + r2[1] + '\n')
 

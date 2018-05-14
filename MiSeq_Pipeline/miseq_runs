@@ -20,7 +20,7 @@ DATA=raid
 LOGS=/raid/miseq/logs
 
 CHECKFILE=runfinished
-
+ 
 # *** These emails are now defined in send_email.py **** #
 #email="msettles@uidaho.edu,dnew@uidaho.edu,bcheldelin@uidaho.edu,boswald@uidaho.edu"
 #email="shunter@gmail.com"
